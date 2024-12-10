@@ -41,7 +41,7 @@ const Menu: React.FC = () => {
         const data = await response.json()
         console.log(data.message)
       } catch (error) {
-        console.log('User already added:');
+        console.log(error);
       }
     };
 

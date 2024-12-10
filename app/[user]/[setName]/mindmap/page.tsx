@@ -50,7 +50,7 @@ interface FlashcardSet {
 export default function Page() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
+  const [, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState<{
     source: string | null,
@@ -84,8 +84,7 @@ export default function Page() {
 
           const data = await response.json();
           setFlashcardSet(data)
-          console.log(data.Flashcards)
-          let flashcards = data.Flashcards
+          const flashcards = data.Flashcards
           
           // Calculate starting x and y to center nodes
           const totalNodes = flashcards.length;
@@ -112,7 +111,7 @@ export default function Page() {
     if (params) {
       fetchSet();
     }
-  }, [params]);
+  }, [params, setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -124,7 +123,7 @@ export default function Page() {
       });
       setIsDialogOpen(true);
     },
-    [setEdges]
+    []
   );
 
   const handleSaveRelationship = () => {
@@ -162,7 +161,7 @@ export default function Page() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           edgeTypes={{
-            step: ({ sourceX, sourceY, targetX, targetY, label, ...rest }) => {
+            step: ({ sourceX, sourceY, targetX, targetY, label }) => {
               // Custom edge rendering to show label on top of the line
               return (
                 <>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
 import { 
@@ -8,7 +8,6 @@ import {
   ChevronRight, 
   ChevronLeft, 
   RefreshCw,
-  CheckCircle2,
   XCircle 
 } from "lucide-react";
 import Menu from "@/components/Menu";
@@ -45,10 +44,10 @@ export default function BlurtingMethodExplorer({
   
   // New state for tracking learning progress
   const [learnedCards, setLearnedCards] = useState<number[]>([]);
-  const [attemptFeedback, setAttemptFeedback] = useState<'correct' | 'incorrect' | null>(null);
-  const [expandedId, setExpandedId] = useState(null);
+  const [, setAttemptFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const toggleCard = (id: any) => {
+  const toggleCard = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
@@ -119,7 +118,7 @@ export default function BlurtingMethodExplorer({
       <div className="min-h-screen flex items-center justify-center bg-red-50">
         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
           <XCircle className="mx-auto h-16 w-16 text-red-500 mb-4" />
-          <p className="text-red-600 text-2xl font-semibold">Couldn't load your flashcard set</p>
+          <p className="text-red-600 text-2xl font-semibold">Could not load your flashcard set</p>
           <button 
             onClick={() => router.push('/dashboard')}
             className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"

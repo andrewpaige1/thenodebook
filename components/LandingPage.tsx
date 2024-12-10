@@ -1,7 +1,6 @@
 "use client"
 
 import React from 'react';
-import Menu from './Menu'; 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, BookOpen, Share2 } from "lucide-react";
 

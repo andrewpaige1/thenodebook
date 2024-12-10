@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Book, Edit2, Trash2 } from "lucide-react";
+import { Book } from "lucide-react";
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -62,9 +62,9 @@ export default async function UserFlashcardSets() {
       {flashcardSets.length === 0 ? (
         <div className="text-center text-muted-foreground py-12">
           <Book className="mx-auto h-12 w-12 mb-4 opacity-50" />
-          <p>You haven't created any flashcard sets yet.</p>
+          <p>You have not created any flashcard sets yet.</p>
           <Button className="mt-4" asChild>
-            <a href="/create-flashcards">Create First Set</a>
+            <Link href="/create-flashcards">Create First Set</Link>
           </Button>
         </div>
       ) : (
