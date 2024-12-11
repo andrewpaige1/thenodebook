@@ -72,7 +72,7 @@ export default function BlurtingMethodExplorer({
       if (user?.nickname && resolvedParams) {
         try {
           const response = await fetch(
-            `http://${process.env.NEXT_PUBLIC_API_URL}/api/users/${user.nickname}/sets/${decodeURIComponent(resolvedParams.setName)}`, {
+            `${process.env.NEXT_PUBLIC_API_URL}/api/users/${user.nickname}/sets/${decodeURIComponent(resolvedParams.setName)}`, {
               method: 'GET',
               credentials: 'include',
               headers: {

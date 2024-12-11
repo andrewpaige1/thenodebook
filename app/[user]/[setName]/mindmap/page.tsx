@@ -69,7 +69,7 @@ export default function Page() {
       if (params.user) {
         try {
           const response = await fetch(
-            `http://${process.env.NEXT_PUBLIC_API_URL}/api/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
+            `${process.env.NEXT_PUBLIC_API_URL}/api/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
               method: 'GET',
               credentials: 'include',
               headers: {
