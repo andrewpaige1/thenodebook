@@ -22,6 +22,7 @@ interface FlashcardSet {
 }
 
 async function fetchUserFlashcardSets(nickname: string) {
+  console.log(process.env.NEXT_PUBLIC_API_URL)
   try {
     const cookieStore = await cookies();
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${nickname}/flashcard-sets`, {
