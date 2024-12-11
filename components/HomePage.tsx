@@ -64,7 +64,7 @@ export default async function UserFlashcardSets() {
           <Book className="mx-auto h-12 w-12 mb-4 opacity-50" />
           <p>You have not created any flashcard sets yet.</p>
           <Button className="mt-4" asChild>
-            <Link href="/create-flashcards">Create First Set</Link>
+            <Link href="/create-set">Create First Set</Link>
           </Button>
         </div>
       ) : (
