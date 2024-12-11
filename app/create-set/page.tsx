@@ -52,7 +52,7 @@ const FlashCardCreator = () => {
         cards: transformedCards
       };
 
-      const response = await fetch('http://localhost:8080/api/createSet', {
+      const response = await fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/createSet`, {
         method: 'POST',
         credentials: 'include',
         headers: {

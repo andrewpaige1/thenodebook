@@ -23,7 +23,7 @@ const Menu: React.FC = () => {
       if (!user) return;
 
       try {
-        const response = await fetch('http://localhost:8080/api/users', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, {
           method: 'POST',
           credentials: 'include',
           headers: {
