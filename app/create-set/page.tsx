@@ -8,6 +8,7 @@ import { Plus, Book, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Edit2, Check
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { redirect } from "next/navigation";
 import Menu from '@/components/Menu';
+import { cookies } from "next/headers";
 
 interface FlashCard {
   id: string;
@@ -52,11 +53,13 @@ const FlashCardCreator = () => {
         cards: transformedCards
       };
 
+      const cookieStore = await cookies();
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/createSet`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Cookie': cookieStore.toString()
         },
         body: JSON.stringify(requestData),
       });
