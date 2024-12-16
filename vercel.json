@@ -1,8 +1,0 @@
-{
-    "rewrites": [
-      {
-        "source": "/app/:path*",
-        "destination": "https://nodebook-api.onrender.com/app/:path*"
-      }
-    ]
-  }
