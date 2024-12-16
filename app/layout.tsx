@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "The Node Book",
+  title: "Mindthred",
   description: "Understand the concepts for your coursework",
 };
 

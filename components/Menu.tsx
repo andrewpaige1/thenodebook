@@ -68,7 +68,7 @@ const Menu: React.FC = () => {
 
   return (
     <div className="flex items-center justify-between p-4">
-      <Link href="/" className="text-2xl font-bold">NodeBook</Link>
+      <Link href="/" className="text-2xl font-bold">Mindthred</Link>
       
       <div className="flex items-center space-x-4">
         <Button asChild variant="outline">

@@ -24,12 +24,16 @@ interface FlashcardSet {
 async function fetchUserFlashcardSets(nickname: string) {
   try {
     const cookieStore = await cookies();
-    console.log(cookieStore)
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/users/${nickname}/flashcard-sets`, {
+    const authCookie = cookieStore.get("auth_token");
+    if (!authCookie) {
+      throw new Error("Auth token not found in cookies");
+    }
+    console.log(authCookie)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/users/${nickname}/flashcard-sets`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': cookieStore.toString()
+        'Cookie': `auth_token=${authCookie.value}`,
       }
     })
 
