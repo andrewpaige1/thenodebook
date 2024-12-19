@@ -95,12 +95,6 @@ const Menu: React.FC = () => {
             <DropdownMenuItem>
               <Link href={`/${user.nickname}`}>Dashboard</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link href="/flashcards">My Flashcards</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link href="/mindmaps">My Mind Maps</Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Link href="/api/auth/logout">Logout</Link>
