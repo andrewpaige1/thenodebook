@@ -13,7 +13,8 @@ import {
   Connection,
   Edge,
 } from '@xyflow/react';
- 
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { useRouter } from "next/navigation";
 import '@xyflow/react/dist/style.css';
 import { useParams } from 'next/navigation'
 import { v4 as uuidv4 } from 'uuid'
@@ -62,6 +63,15 @@ export default function Page() {
     relationshipLabel: ''
   });
   const params = useParams<{ user: string; setName: string }>()
+
+  const { user, isLoading: isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user && !isUserLoading) {
+      router.push('/api/auth/login');
+    }
+  }, [user, isUserLoading, router])
 
   // Data fetching
   useEffect(() => {
@@ -153,7 +163,12 @@ export default function Page() {
     <>
       <Menu />
       <SecondaryNav user={params.user} setName={params.setName} />
-        <div style={{ width: '100vw', height: 'calc(100vh - 64px)' }}>  {/* Adjust height to account for Menu */}
+        {!user && (
+          <div className="max-w-4xl mx-auto p-4">
+            <h2>Please login or sign up to use this feature</h2>
+          </div>
+          )}
+        {user && <div style={{ width: '100vw', height: 'calc(100vh - 64px)' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -196,7 +211,7 @@ export default function Page() {
           <MiniMap />
           <Background variant={BackgroundVariant.Cross} gap={12} size={1} />
         </ReactFlow>
-      </div>
+      </div>}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">

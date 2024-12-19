@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, BookOpen, XCircle } from 'lucide-react';
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { useRouter } from "next/navigation";
+//import { useRouter } from "next/navigation";
 import Menu from "@/components/Menu";
 import SecondaryNav from "@/components/FlashcardNav";
 
@@ -24,8 +24,8 @@ interface FlashcardExplorerProps {
 }
 
 const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
-  const { user, isLoading: isUserLoading } = useUser();
-  const router = useRouter();
+  const { isLoading: isUserLoading } = useUser();
+  //const router = useRouter();
   const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [visibleSections, setVisibleSections] = useState<string[]>(['term']);
@@ -34,11 +34,11 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   // Authentication check
-  useEffect(() => {
+/*  useEffect(() => {
     if (!user && !isUserLoading) {
       router.push('/api/auth/login');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router]);*/
 
   useEffect(() => {
     params.then(resolved => {

@@ -77,6 +77,7 @@ const ProfileFlashcardSets = () => {
         description: "Failed to copy link",
         duration: 2000,
       });
+      return err
     }
   };
 
@@ -135,14 +136,14 @@ const ProfileFlashcardSets = () => {
             <Share2 className="w-4 h-4 text-blue-500" />
           )}
           <p className="text-sm text-blue-600">
-            Share this link to show people what you're studying! <span className="font-medium">/{user?.nickname}</span>
+          Share this link to show people what you&apos;re studying!
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sets.map((set) => (
             <Card key={set.ID} className="hover:shadow-lg transition-all duration-200">
-              <Link href={`/sets/${set.ID}`}>
+              <Link href={`/${user?.nickname}/${set.Title}`}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold truncate">
@@ -153,7 +154,7 @@ const ProfileFlashcardSets = () => {
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {set.IsPublic ? 'Public' : 'Private'}
+                      {set.IsPublic ? 'Public' : 'Public'}
                     </span>
                   </div>
                 </CardHeader>

@@ -160,7 +160,7 @@ export default function BlurtingMethodExplorer({
   };
 
   const currentCard = flashcardSet.Flashcards[currentCardIndex];
-  const learningProgress = Math.round((learnedCards.length / flashcardSet.Flashcards.length) * 100);
+  //const learningProgress = Math.round((learnedCards.length / flashcardSet.Flashcards.length) * 100);
 
   return (
     <div>
