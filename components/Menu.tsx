@@ -93,7 +93,7 @@ const Menu: React.FC = () => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href="/dashboard">Dashboard</Link>
+              <Link href={`/${user.nickname}`}>Dashboard</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Link href="/flashcards">My Flashcards</Link>
