@@ -97,11 +97,11 @@ export default function UserFlashcardSets() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {flashcardSets.map((set) => (
           <Card key={set.ID} className="hover:shadow-lg transition-shadow">
-            <Link href={`/${user?.nickname}/${set.Title}`}>
               <CardHeader className="flex-row items-center justify-between space-y-0 p-4 pb-0">
                 <CardTitle>{set.Title}</CardTitle>
-                <FlashcardSetActions setId={set.ID} />
+                <FlashcardSetActions nickname={user?.nickname} setName={set.Title} />
               </CardHeader>
+              <Link href={`/${user?.nickname}/${set.Title}`}>
               <CardContent className="p-4 pt-2">
                 <div className="text-sm text-muted-foreground mb-2">
                   {set.Flashcards.length} Cards

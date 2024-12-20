@@ -2,33 +2,37 @@
 
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
-export default function FlashcardSetActions({ setId }: { setId: number }) {
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Add edit functionality
-    console.log(`Editing set ${setId}`);
+export default function FlashcardSetActions({ nickname, setName }: { nickname: string | null | undefined, setName: string }) {
+  
+  const router = useRouter();
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    router.push(`/${nickname}/${setName}/updateSet`);
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Add delete functionality
-    console.log(`Deleting set ${setId}`);
-  };
+  if(!nickname) {
+    return (
+      <div className="flex items-center gap-2">
+        <p>Caannot edit flashcard set</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center gap-2">
       <Button 
         size="icon" 
         variant="ghost" 
-        onClick={handleEdit}
+        onClick={handleClick}
       >
         <Edit2 className="h-4 w-4" />
       </Button>
       <Button 
         size="icon" 
         variant="ghost" 
-        onClick={handleDelete}
       >
         <Trash2 className="h-4 w-4" />
       </Button>
