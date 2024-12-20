@@ -111,7 +111,7 @@ export default function UserFlashcardSets() {
                     </span>
                   ) : (
                     <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
-                      Public
+                      Private
                     </span>
                   )}
                 </div>

@@ -154,7 +154,7 @@ const ProfileFlashcardSets = () => {
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {set.IsPublic ? 'Public' : 'Public'}
+                      {set.IsPublic ? 'Public' : 'Private'}
                     </span>
                   </div>
                 </CardHeader>

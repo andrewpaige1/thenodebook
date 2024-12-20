@@ -32,6 +32,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Menu from '@/components/Menu'  // Import the Menu component
 import SecondaryNav from '@/components/FlashcardNav';
+import { BookOpen, Lock, XCircle } from "lucide-react";
+
 
 const initialNodes: any = [];
 const initialEdges: any = [];
@@ -51,7 +53,9 @@ interface FlashcardSet {
 export default function Page() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [, setFlashcardSet] = useState<FlashcardSet | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState<{
     source: string | null,
@@ -89,10 +93,23 @@ export default function Page() {
           );
 
           if (!response.ok) {
+            if (response.status === 403) {
+              setError('private');
+            } else {
+              setError('general');
+            }
             throw new Error('Failed to fetch flashcard set');
           }
 
+
           const data = await response.json();
+
+          if (!data.IsPublic && (!user || user.nickname !== params.user)) {
+            setError('private');
+            setIsLoading(false);
+            return;
+          }
+
           setFlashcardSet(data)
           const flashcards = data.Flashcards
           
@@ -112,8 +129,10 @@ export default function Page() {
             }
             setNodes(prevNodes => [...prevNodes, node])
           }
+          setIsLoading(false);
         } catch (error) {
           console.error('Error fetching flashcard set:', error);
+          setIsLoading(false);
         }
       }
     }
@@ -121,7 +140,7 @@ export default function Page() {
     if (params) {
       fetchSet();
     }
-  }, [params, setNodes]);
+  }, [params, user, setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -158,6 +177,59 @@ export default function Page() {
       handleSaveRelationship();
     }
   };
+
+  if (isLoading || isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+          <BookOpen className="mx-auto h-16 w-16 text-black animate-pulse" />
+          <p className="mt-4 text-xl text-gray-700">Preparing your learning journey...</p>
+        </div>
+      </div>
+    );
+  }
+
+
+  if (error === 'private') {
+    return (
+      <div>
+        <Menu />
+        {params && <SecondaryNav user={params.user} setName={params.setName} />}
+        <div className="min-h-[60vh] flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto p-8">
+            <Lock className="mx-auto h-16 w-16 text-gray-500 mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3">Private Flashcard Set</h2>
+            <p className="text-gray-600 mb-4">
+              This flashcard set is private and can only be accessed by its creator.
+            </p>
+            {!user && (
+              <p className="text-sm text-gray-500">
+                If this is your set, please log in to view it.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+  if (!flashcardSet) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="text-center bg-white p-8 rounded-xl shadow-lg">
+          <XCircle className="mx-auto h-16 w-16 text-red-500 mb-4" />
+          <p className="text-red-600 text-2xl font-semibold">Could not load your flashcard set</p>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

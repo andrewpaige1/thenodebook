@@ -8,7 +8,8 @@ import {
   ChevronRight, 
   ChevronLeft, 
   RefreshCw,
-  XCircle 
+  XCircle,
+  Lock
 } from "lucide-react";
 import Menu from "@/components/Menu";
 import SecondaryNav from "@/components/FlashcardNav";
@@ -43,6 +44,7 @@ export default function BlurtingMethodExplorer({
   const [learnedCards, setLearnedCards] = useState<number[]>([]);
   const [, setAttemptFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleCard = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
@@ -65,7 +67,7 @@ export default function BlurtingMethodExplorer({
       if (user?.nickname && resolvedParams) {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/app/users/${user.nickname}/sets/${decodeURIComponent(resolvedParams.setName)}`, {
+            `${process.env.NEXT_PUBLIC_API_URL}/app/users/${resolvedParams.user}/sets/${decodeURIComponent(resolvedParams.setName)}`, {
               method: 'GET',
               credentials: 'include',
               headers: {
@@ -75,10 +77,23 @@ export default function BlurtingMethodExplorer({
           );
 
           if (!response.ok) {
+            if (response.status === 403) {
+              setError('private');
+            } else {
+              setError('general');
+            }
             throw new Error('Failed to fetch flashcard set');
           }
 
           const data = await response.json();
+
+
+          if (!data.IsPublic && (!user || user.nickname !== resolvedParams.user)) {
+            setError('private');
+            setIsLoading(false);
+            return;
+          }
+
           setFlashcardSet(data);
           setIsLoading(false);
         } catch (error) {
@@ -91,7 +106,7 @@ export default function BlurtingMethodExplorer({
     if (resolvedParams) {
       fetchSet();
     }
-  }, [user?.nickname, resolvedParams]);
+  }, [user?.nickname, user, resolvedParams]);
 
   if (isLoading || isUserLoading) {
     return (
@@ -99,6 +114,30 @@ export default function BlurtingMethodExplorer({
         <div className="text-center p-8 bg-white rounded-xl shadow-lg">
           <BookOpen className="mx-auto h-16 w-16 text-black animate-pulse" />
           <p className="mt-4 text-xl text-gray-700">Preparing your learning journey...</p>
+        </div>
+      </div>
+    );
+  }
+
+
+  if (error === 'private') {
+    return (
+      <div>
+        <Menu />
+        {resolvedParams && <SecondaryNav user={resolvedParams.user} setName={resolvedParams.setName} />}
+        <div className="min-h-[60vh] flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto p-8">
+            <Lock className="mx-auto h-16 w-16 text-gray-500 mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3">Private Flashcard Set</h2>
+            <p className="text-gray-600 mb-4">
+              This flashcard set is private and can only be accessed by its creator.
+            </p>
+            {!user && (
+              <p className="text-sm text-gray-500">
+                If this is your set, please log in to view it.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );

@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Book, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Edit2, Check, X, Send } from 'lucide-react';
+import { Plus, Book, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Edit2, Check, X, Send, Globe2, Lock } from 'lucide-react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { redirect } from "next/navigation";
 import Menu from '@/components/Menu';
+import { Switch } from "@/components/ui/switch";
 
 interface FlashCard {
   id: string;
@@ -19,6 +20,7 @@ interface FlashCard {
 const FlashCardCreator = () => {
   const { user } = useUser();
   const [setName, setSetName] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
   const [cards, setCards] = useState<FlashCard[]>([]);
   const [currentCard, setCurrentCard] = useState<Partial<FlashCard>>({});
   const [activeStep, setActiveStep] = useState(0);
@@ -39,7 +41,6 @@ const FlashCardCreator = () => {
     try {
       setIsSubmitting(true);
       
-      // Transform the cards data to match the API's expected format
       const transformedCards = cards.map(card => ({
         term: card.term,
         solution: card.solution,
@@ -49,7 +50,8 @@ const FlashCardCreator = () => {
       const requestData = {
         name: setName,
         nickname: user.nickname,
-        cards: transformedCards
+        cards: transformedCards,
+        isPublic: isPublic
       };
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/createSet`, {
@@ -68,14 +70,11 @@ const FlashCardCreator = () => {
       const result = await response.json();
       console.log('Flashcard set created:', result);
 
-      // Clear the form after successful submission
       setCards([]);
       setSetName('');
       
     } catch (error) {
       console.error('Error submitting flashcards:', error);
-      // You might want to show an error message here
-      
     } finally {
       setIsSubmitting(false);
       redirect("/")
@@ -206,121 +205,138 @@ const FlashCardCreator = () => {
   return (
     <div>
       <Menu/>
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      {/* Set Name Input */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Create Flashcard Set</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Input
-            value={setName}
-            onChange={(e) => setSetName(e.target.value)}
-            placeholder="Enter your flashcard set name..."
-            className="text-lg"
-          />
-        </CardContent>
-      </Card>
-
-      {/* Main Card Creation Interface */}
-      <Card className="relative overflow-hidden">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="flex items-center justify-center gap-2">
-            <StepIcon className="h-6 w-6" />
-            {steps[activeStep].name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Progress Bar */}
-          <div className="w-full h-1 bg-muted mb-6">
-            <div 
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-
-          {/* Input Area */}
-          <div className="space-y-4">
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Set Name Input and Privacy Toggle */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Create Flashcard Set</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <Input
-              value={currentValue}
-              onChange={(e) => handleInputChange(e.target.value)}
-              placeholder={steps[activeStep].placeholder}
-              className="text-lg p-6"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  if (activeStep === steps.length - 1) {
-                    addCard();
-                  } else {
-                    handleStepChange('next');
-                  }
-                }
-              }}
+              value={setName}
+              onChange={(e) => setSetName(e.target.value)}
+              placeholder="Enter your flashcard set name..."
+              className="text-lg"
             />
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between pt-4">
-              <Button
-                variant="outline"
-                onClick={() => handleStepChange('prev')}
-                disabled={activeStep === 0}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              
-              {activeStep === steps.length - 1 ? (
-                <Button onClick={addCard} disabled={!currentCard.term?.trim()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Card
-                </Button>
-              ) : (
-                <Button onClick={() => handleStepChange('next')}>
-                  Next
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                {isPublic ? (
+                  <Globe2 className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {isPublic ? 'Public - Anyone can view this set' : 'Private - Only you can view this set'}
+                </span>
+              </div>
+              <Switch
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
+                className="ml-2"
+              />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Cards Preview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cards.map(card => (
-          <Card key={card.id} className="group relative hover:shadow-lg transition-shadow">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => removeCard(card.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <CardContent className="p-4 space-y-2">
-              <CardField card={card} field="term" icon={Book} className="font-medium" />
-              <CardField card={card} field="solution" icon={Lightbulb} />
-              <CardField card={card} field="concept" icon={Tag} className="text-muted-foreground" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+        {/* Main Card Creation Interface */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="flex items-center justify-center gap-2">
+              <StepIcon className="h-6 w-6" />
+              {steps[activeStep].name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Progress Bar */}
+            <div className="w-full h-1 bg-muted mb-6">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
+              />
+            </div>
 
-      {/* Submit Button */}
-      {cards.length > 0 && (
-        <div className="flex justify-center">
-          <Button
-            size="lg"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !setName.trim()}
-            className="gap-2"
-          >
-            <Send className="h-4 w-4" />
-            {isSubmitting ? 'Submitting...' : 'Submit Flashcard Set'}
-          </Button>
+            {/* Input Area */}
+            <div className="space-y-4">
+              <Input
+                value={currentValue}
+                onChange={(e) => handleInputChange(e.target.value)}
+                placeholder={steps[activeStep].placeholder}
+                className="text-lg p-6"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    if (activeStep === steps.length - 1) {
+                      addCard();
+                    } else {
+                      handleStepChange('next');
+                    }
+                  }
+                }}
+              />
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => handleStepChange('prev')}
+                  disabled={activeStep === 0}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                
+                {activeStep === steps.length - 1 ? (
+                  <Button onClick={addCard} disabled={!currentCard.term?.trim()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Card
+                  </Button>
+                ) : (
+                  <Button onClick={() => handleStepChange('next')}>
+                    Next
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cards Preview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {cards.map(card => (
+            <Card key={card.id} className="group relative hover:shadow-lg transition-shadow">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => removeCard(card.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <CardContent className="p-4 space-y-2">
+                <CardField card={card} field="term" icon={Book} className="font-medium" />
+                <CardField card={card} field="solution" icon={Lightbulb} />
+                <CardField card={card} field="concept" icon={Tag} className="text-muted-foreground" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      )}
+
+        {/* Submit Button */}
+        {cards.length > 0 && (
+          <div className="flex justify-center">
+            <Button
+              size="lg"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !setName.trim()}
+              className="gap-2"
+            >
+              <Send className="h-4 w-4" />
+              {isSubmitting ? 'Submitting...' : 'Submit Flashcard Set'}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
   );
 };
 

@@ -1,9 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, BookOpen, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, XCircle, Lock } from 'lucide-react';
 import { useUser } from "@auth0/nextjs-auth0/client";
-//import { useRouter } from "next/navigation";
 import Menu from "@/components/Menu";
 import SecondaryNav from "@/components/FlashcardNav";
 
@@ -15,8 +14,11 @@ interface Flashcard {
 }
 
 interface FlashcardSet {
+  ID: number;
   Title: string;
   Flashcards: Flashcard[];
+  IsPublic: boolean;
+  UserID: number;
 }
 
 interface FlashcardExplorerProps {
@@ -24,21 +26,14 @@ interface FlashcardExplorerProps {
 }
 
 const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
-  const { isLoading: isUserLoading } = useUser();
-  //const router = useRouter();
+  const { user, isLoading: isUserLoading } = useUser();
   const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [visibleSections, setVisibleSections] = useState<string[]>(['term']);
   const [isLoading, setIsLoading] = useState(true);
   const [resolvedParams, setResolvedParams] = useState<{ user: string, setName: string } | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
-
-  // Authentication check
-/*  useEffect(() => {
-    if (!user && !isUserLoading) {
-      router.push('/api/auth/login');
-    }
-  }, [user, isUserLoading, router]);*/
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(resolved => {
@@ -62,10 +57,23 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
           );
 
           if (!response.ok) {
+            if (response.status === 403) {
+              setError('private');
+            } else {
+              setError('general');
+            }
             throw new Error('Failed to fetch flashcard set');
           }
 
           const data = await response.json();
+          
+          // Check if the set is private and if the current user is authorized
+          if (!data.IsPublic && (!user || user.nickname !== resolvedParams.user)) {
+            setError('private');
+            setIsLoading(false);
+            return;
+          }
+
           setFlashcardSet(data);
           setIsLoading(false);
         } catch (error) {
@@ -78,7 +86,7 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
     if (resolvedParams) {
       fetchSet();
     }
-  }, [resolvedParams]);
+  }, [resolvedParams, user]);
 
   if (isLoading || isUserLoading) {
     return (
@@ -91,7 +99,32 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
     );
   }
 
-  if (!flashcardSet) {
+  // Private Set Error State
+  if (error === 'private') {
+    return (
+      <div>
+        <Menu />
+        {resolvedParams && <SecondaryNav user={resolvedParams.user} setName={resolvedParams.setName} />}
+        <div className="min-h-[60vh] flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto p-8">
+            <Lock className="mx-auto h-16 w-16 text-gray-500 mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3">Private Flashcard Set</h2>
+            <p className="text-gray-600 mb-4">
+              This flashcard set is private and can only be accessed by its creator.
+            </p>
+            {!user && (
+              <p className="text-sm text-gray-500">
+                If this is your set, please log in to view it.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // General Error State
+  if (error === 'general' || !flashcardSet) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
