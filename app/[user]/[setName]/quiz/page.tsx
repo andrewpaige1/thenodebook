@@ -48,7 +48,7 @@ export default function FlashcardStudy({
   const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
-  const [showSolution, setShowSolution] = useState(false);
+  const [, setShowSolution] = useState(false);
   const [confidence, setConfidence] = useState<'high' | 'low' | null>(null);
   const [masteredCards, setMasteredCards] = useState<Set<number>>(new Set());
   const [strugglingCards, setStrugglingCards] = useState<Set<number>>(new Set());
@@ -415,7 +415,7 @@ export default function FlashcardStudy({
                         </div>
                       </div>
         
-                      {filteredCards.map((card, index) => (
+                      {filteredCards.map((card) => (
                         <Card 
                           key={card.ID}
                           className={`transition-all ${
