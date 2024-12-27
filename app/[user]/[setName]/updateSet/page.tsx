@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import Menu from '@/components/Menu';
 import { Switch } from "@/components/ui/switch";
 import { useParams } from 'next/navigation'
+import ErrorAlert from '@/components/ErrorAlert';
 
 interface FlashCard {
   id: string;
@@ -30,6 +31,12 @@ interface FlashCard {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [originalSetName, setOriginalSetName] = useState('');
+  interface ErrorState {
+    message: string | null;
+  }
+  
+  // Update your state declaration
+  const [updateError, setUpdateError] = useState<ErrorState['message']>(null);
 
   const steps = [
     { name: 'Term', icon: Book, placeholder: 'Enter the term...' },
@@ -67,7 +74,6 @@ interface FlashCard {
         // Only allow editing if user owns the set
         if (user?.nickname !== params.user) {
           redirect('/');
-          return;
         }
 
         setSetName(data.Title);
@@ -84,7 +90,7 @@ interface FlashCard {
         
         setCards(transformedCards);
       } catch (error) {
-        console.error('Error fetching flashcard set:', error);
+        console.log(error)
       } finally {
         setIsLoading(false);
       }
@@ -125,14 +131,23 @@ interface FlashCard {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update flashcards');
+        if (response.status === 409) {
+          setUpdateError("You already have a set with this name")
+        }
       }
-
-    } catch (error) {
-      console.error('Error updating flashcards:', error);
-    } finally {
-      setIsSubmitting(false);
       redirect(`/${user.nickname}/${setName}`);
+    } catch (error) {
+      if (error instanceof Response) {
+        if (error.status === 409) {
+          setUpdateError("You already have a set with this name");
+        } else {
+          setUpdateError("Failed to update flashcard set");
+        }      
+      }
+      return error
+    } 
+    finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -263,6 +278,14 @@ interface FlashCard {
       <Menu />
       <div className="max-w-4xl mx-auto p-6 space-y-8">
         {/* Set Name Input and Privacy Toggle */}
+        {updateError && (
+          <ErrorAlert 
+            message={updateError}
+            onClose={() => setUpdateError(null)}
+            duration={4000}
+            position="bottom-right"
+          />
+        )}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle>Edit Flashcard Set</CardTitle>
