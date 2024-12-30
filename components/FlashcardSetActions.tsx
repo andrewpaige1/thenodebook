@@ -89,7 +89,7 @@ export default function FlashcardSetActions({ nickname, setName, onSetDeleted }:
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete your
-              flashcard set "{setName}".
+              flashcard set &ldquo;{setName}&rdquo;.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
