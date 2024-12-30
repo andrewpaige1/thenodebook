@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Book, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Edit2, Check, X, Send, Globe2, Lock } from 'lucide-react';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import Menu from '@/components/Menu';
 import { Switch } from "@/components/ui/switch";
 import { useParams } from 'next/navigation'
@@ -30,6 +30,7 @@ interface FlashCard {
   const [editingField, setEditingField] = useState<{ cardId: string; field: keyof FlashCard } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
   const [originalSetName, setOriginalSetName] = useState('');
   interface ErrorState {
     message: string | null;
@@ -135,7 +136,7 @@ interface FlashCard {
           setUpdateError("You already have a set with this name")
         }
       }
-      redirect(`/${user.nickname}/${setName}`);
+      router.push(`/${user.nickname}/${encodeURIComponent(setName)}`);
     } catch (error) {
       if (error instanceof Response) {
         if (error.status === 409) {

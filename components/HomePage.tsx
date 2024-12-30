@@ -99,14 +99,19 @@ export default function UserFlashcardSets() {
           <Card key={set.ID} className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex-row items-center justify-between space-y-0 p-4 pb-0">
                 <CardTitle>{set.Title}</CardTitle>
-                <FlashcardSetActions nickname={user?.nickname} setName={set.Title} />
+                <FlashcardSetActions 
+                nickname={user?.nickname} 
+                setName={set.Title}         
+                onSetDeleted={() => {
+                  setFlashcardSets(prevSets => prevSets.filter(s => s.ID !== set.ID));
+                }}/>
               </CardHeader>
               <Link href={`/${user?.nickname}/${set.Title}`}>
               <CardContent className="p-4 pt-2">
                 <div className="text-sm text-muted-foreground mb-2">
                   {set.Flashcards.length} Cards
                   {set.IsPublic ? (
-                    <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                    <span className="ml-2 px-2 py-1x rounded-full text-xs">
                       Public
                     </span>
                   ) : (
