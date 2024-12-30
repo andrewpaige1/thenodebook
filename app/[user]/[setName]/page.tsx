@@ -100,7 +100,7 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
   }
 
   // Private Set Error State
-  if (error === 'private') {
+  if (error === 'private' && resolvedParams?.user !== user?.nickname) {
     return (
       <div>
         <Menu />
@@ -122,9 +122,9 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
       </div>
     );
   }
-
+  
   // General Error State
-  if (error === 'general' || !flashcardSet) {
+  if (error === 'general' || (!flashcardSet && isLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -135,6 +135,7 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
     );
   }
 
+  if (flashcardSet) {
   const currentCard = flashcardSet.Flashcards[currentCardIndex];
 
   const toggleSection = (section: string) => {
@@ -305,6 +306,7 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
       </div>
     </div>
   );
+ }
 };
 
 export default MonochromeFlashcard;
