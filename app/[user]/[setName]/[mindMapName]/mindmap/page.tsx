@@ -62,7 +62,7 @@ export default function Page() {
     target: null,
     relationshipLabel: ''
   });
-  const params = useParams<{ user: string; setName: string }>()
+  const params = useParams<{ user: string; setName: string; mindMapName: string }>()
 
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
@@ -78,6 +78,26 @@ export default function Page() {
     async function fetchSet() {
       if (params.user) {
         try {
+
+          // /app/{nickname}/mindmap/state/{title
+          const mapStateResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/app/${params.user}/mindmap/state/${decodeURIComponent(params.mindMapName)}`, {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            }
+          );
+
+          if (!mapStateResponse.ok) {
+            throw new Error('Failed to get state');
+          }
+
+          const mapData = await mapStateResponse.json()
+          console.log(mapData)
+
+
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
               method: 'GET',
@@ -95,18 +115,19 @@ export default function Page() {
           const data = await response.json();
           setFlashcardSet(data)
           const flashcards = data.Flashcards
+          console.log(flashcards)
           
           // Calculate starting x and y to center nodes
-          const totalNodes = flashcards.length;
-          const startX = window.innerWidth / 2 - 100; // Adjust based on node width
-          const startY = window.innerHeight / 2 - (totalNodes * 150 / 2);
+         // const totalNodes = flashcards.length;
+         // const startX = window.innerWidth / 2 - 100; // Adjust based on node width
+         // const startY = window.innerHeight / 2 - (totalNodes * 150 / 2);
 
-          for(let i = 0; i < flashcards.length; i++) {
+          for(let i = 0; i < mapData.nodeLayouts.length; i++) {
             const node = { 
               id: uuidv4(), 
               position: { 
-                x: startX, 
-                y: startY + i * 150 
+                x: mapData.nodeLayouts[i].XPosition, 
+                y: mapData.nodeLayouts[i].YPosition
               }, 
               data: { label: flashcards[i].Term} 
             }
