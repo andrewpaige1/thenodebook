@@ -54,6 +54,7 @@ export default function Page() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [error, setError] = useState<string | null>(null);
+  const [newMapError, setMapError] = useState('')
   const [isLoading, setIsLoading] = useState(true);
   const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -66,7 +67,7 @@ export default function Page() {
     target: null,
     relationshipLabel: ''
   });
-  const params = useParams<{ user: string; setName: string }>()
+  const params = useParams<{ user: string; setName: string; mindMapName: string }>()
 
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
@@ -83,7 +84,7 @@ export default function Page() {
       if (params.user) {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
+            `${process.env.NEXT_PUBLIC_API_URL}/app/${params.user}/mindmap/state/${decodeURIComponent(params.setName)}`, {
               method: 'GET',
               credentials: 'include',
               headers: {
@@ -93,46 +94,102 @@ export default function Page() {
           );
 
           if (!response.ok) {
-            if (response.status === 403) {
-              setError('private');
-            } else {
-              setError('general');
-            }
-            throw new Error('Failed to fetch flashcard set');
-          }
+            if (response.status === 404) {
+              console.log("creating new mind map and saving its data...")
+              // create new mind map here and proceed with current logic
+              try {
+                const response = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    }
+                  }
+                );
+      
+                if (!response.ok) {
+                  if (response.status === 403) {
+                    setError('private');
+                  } else {
+                    setError('general');
+                  }
+                  throw new Error('Failed to fetch flashcard set');
+                }
+      
+      
+                const data = await response.json();
+      
+                if (!data.IsPublic && (!user || user.nickname !== params.user)) {
+                  setError('private');
+                  setIsLoading(false);
+                  return;
+                }
+      
+                setFlashcardSet(data)
+                const flashcards = data.Flashcards
+                
+                // Calculate starting x and y to center nodes
+                const totalNodes = flashcards.length;
+                const startX = window.innerWidth / 2 - 100; // Adjust based on node width
+                const startY = window.innerHeight / 2 - (totalNodes * 150 / 2);
+                let nodeList = []
+                for(let i = 0; i < flashcards.length; i++) {
+                  const node = { 
+                    id: uuidv4(), 
+                    flashcardID: flashcards[i].ID,
+                    position: { 
+                      x: startX, 
+                      y: startY + i * 150 
+                    }, 
+                    data: { label: flashcards[i].Term} 
+                  }
+                  nodeList.push(node)
+                  setNodes(prevNodes => [...prevNodes, node])
+                }
 
 
-          const data = await response.json();
 
-          if (!data.IsPublic && (!user || user.nickname !== params.user)) {
-            setError('private');
-            setIsLoading(false);
-            return;
-          }
+                const formattedNodeLayouts = nodeList.map((node) => ({
+                  flashcardID: node.flashcardID,
+                  MindMapID: 0,
+                  xPosition: node.position.x,
+                  yPosition: node.position.y,
+              }));
 
-          setFlashcardSet(data)
-          const flashcards = data.Flashcards
+                const requestData = {
+                  title: params.mindMapName,
+                  nickname: params.user,
+                  setID: data.ID,
+                  isPublic: data.IsPublic,
+                  connections: [],
+                  nodeLayouts: formattedNodeLayouts
+
+                };
           
-          // Calculate starting x and y to center nodes
-          const totalNodes = flashcards.length;
-          const startX = window.innerWidth / 2 - 100; // Adjust based on node width
-          const startY = window.innerHeight / 2 - (totalNodes * 150 / 2);
+                const createMapRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/create`, {
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(requestData),
+                });
 
-          for(let i = 0; i < flashcards.length; i++) {
-            const node = { 
-              id: uuidv4(), 
-              position: { 
-                x: startX, 
-                y: startY + i * 150 
-              }, 
-              data: { label: flashcards[i].Term} 
+
+                const createMapData = await createMapRes.json()
+                console.log(createMapData)
+
+                setIsLoading(false);
+              } catch (error) {
+                console.error('Error fetching flashcard set:', error);
+                setIsLoading(false);
+              }
             }
-            setNodes(prevNodes => [...prevNodes, node])
           }
-          setIsLoading(false);
-        } catch (error) {
-          console.error('Error fetching flashcard set:', error);
-          setIsLoading(false);
+
+        } catch(e) {
+          return e
         }
       }
     }

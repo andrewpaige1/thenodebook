@@ -7,7 +7,8 @@ import {
   Network,
   Plus,
   XCircle,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Menu from "@/components/Menu";
 import SecondaryNav from "@/components/FlashcardNav";
 
@@ -30,7 +41,7 @@ interface MindMap {
 export default function MindMapList({
   params
 }: {
-  params: Promise<{ user: string, setName: string }>
+  params: Promise<{ user: string; setName: string }>
 }) {
   const router = useRouter();
   const { user, isLoading: isUserLoading } = useUser();
@@ -38,8 +49,12 @@ export default function MindMapList({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [mindMapToDelete, setMindMapToDelete] = useState<MindMap | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [newMapTitle, setNewMapTitle] = useState("");
-  const [resolvedParams, setResolvedParams] = useState<{ user: string, setName: string } | null>(null);
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [resolvedParams, setResolvedParams] = useState<{ user: string; setName: string } | null>(null);
 
   // Resolve params from the promise
   useEffect(() => {
@@ -79,10 +94,74 @@ export default function MindMapList({
     fetchMindMaps();
   }, [resolvedParams]);
 
-  const handleCreateMap = () => {
+  const handleCreateMap = async () => {
     if (!resolvedParams) return;
     if (newMapTitle.trim()) {
-      router.push(`/${resolvedParams.user}/${resolvedParams.setName}/${encodeURIComponent(newMapTitle)}/mindmap`);
+      setTitleError(null);
+
+      const requestData = {
+        title: newMapTitle.trim(),
+        nickname: resolvedParams.user,
+        setName: resolvedParams.setName,
+      };
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/checkDup`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 409) {
+            setTitleError('A mind map with this title already exists');
+            return;
+          }
+          throw new Error(data.message || 'Failed to create mind map');
+        }
+
+        router.push(`/${resolvedParams.user}/${resolvedParams.setName}/${encodeURIComponent(newMapTitle)}/mindmap`);
+      } catch (error) {
+        console.error('Error:', error);
+        setTitleError('Failed to create mind map');
+      }
+    }
+  };
+
+  const handleDeleteMap = async (mindMap: MindMap) => {
+    if (!resolvedParams) return;
+    setDeleteError(null);
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/delete`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: mindMap.ID.toString(),
+          nickname: resolvedParams.user,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to delete mind map');
+      }
+
+      // Update the local state to remove the deleted mind map
+      setMindMaps(mindMaps.filter(map => map.ID !== mindMap.ID));
+      setShowDeleteDialog(false);
+      setMindMapToDelete(null);
+    } catch (error) {
+      console.error('Error:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Unable to delete the mind map. Please try again later.');
     }
   };
 
@@ -120,18 +199,29 @@ export default function MindMapList({
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold">Mind Maps</h2>
+            <Button 
+              onClick={() => {
+                setShowModal(true);
+                setTitleError(null);
+                setNewMapTitle("");
+              }} 
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" /> Create Mind Map
+            </Button>
+          </div>
 
           {mindMaps.length === 0 ? (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center">
-              <Network className="h-16 w-16 text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No Mind Maps Yet</h2>
-              <p className="text-gray-600 mb-4">Create your first mind map to get started</p>
-              <Button 
-                onClick={() => setShowModal(true)}
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" /> Create Mind Map
-              </Button>
+            <div className="min-h-[40vh] flex flex-col items-center justify-center bg-white border rounded-md">
+              <div className="p-6 text-center">
+                <Network className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+                <h2 className="text-xl font-semibold mb-2">No Mind Maps Yet</h2>
+                <p className="text-gray-600">
+                  Create your first mind map to get started.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="grid gap-4">
@@ -140,26 +230,38 @@ export default function MindMapList({
                   key={map.ID}
                   className="hover:shadow-lg transition-shadow"
                 >
-                  <CardContent className="p-4">
-                    <button
-                      className="w-full text-left"
-                      onClick={() => router.push(
-                        `/${resolvedParams?.user}/${resolvedParams?.setName}/${encodeURIComponent(map.Title)}/mindmap`
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
+                  {resolvedParams && <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <button
+                        className="flex-1 text-left"
+                        onClick={() => router.push(
+                          `/${resolvedParams.user}/${resolvedParams.setName}/${encodeURIComponent(map.Title)}/mindmap`
+                        )}
+                      >
                         <div className="flex items-center gap-3">
                           <Network className="h-5 w-5 text-blue-500" />
                           <h3 className="font-semibold text-gray-900">{map.Title}</h3>
                         </div>
-                      </div>
-                    </button>
-                  </CardContent>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMindMapToDelete(map);
+                          setDeleteError(null);
+                          setShowDeleteDialog(true);
+                        }}
+                        className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                        aria-label={`Delete mind map ${map.Title}`}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </CardContent>}
                 </Card>
               ))}
             </div>
           )}
 
+          {/* Create Mind Map Dialog */}
           <Dialog open={showModal} onOpenChange={setShowModal}>
             <DialogContent>
               <DialogHeader>
@@ -169,20 +271,74 @@ export default function MindMapList({
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                <Input
-                  value={newMapTitle}
-                  onChange={(e) => setNewMapTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateMap()}
-                  placeholder="Mind Map Title"
-                  className="w-full"
-                  autoFocus
-                />
+                <div>
+                  <Input
+                    value={newMapTitle}
+                    onChange={(e) => setNewMapTitle(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateMap()}
+                    placeholder="Mind Map Title"
+                    className={`w-full ${titleError ? 'border-red-500' : ''}`}
+                    autoFocus
+                  />
+                  {titleError && (
+                    <p className="text-sm text-red-500 mt-1">{titleError}</p>
+                  )}
+                </div>
                 <div className="flex justify-end">
                   <Button onClick={handleCreateMap}>Create</Button>
                 </div>
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog 
+            open={showDeleteDialog} 
+            onOpenChange={(open) => {
+              setShowDeleteDialog(open);
+              if (!open) {
+                setDeleteError(null);
+                setMindMapToDelete(null);
+              }
+            }}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {deleteError ? 'Error Deleting Mind Map' : 'Are you sure?'}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {deleteError ? (
+                    <div className="text-red-500">{deleteError}</div>
+                  ) : (
+                    `This will permanently delete the mind map "${mindMapToDelete?.Title}". This action cannot be undone.`
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel 
+                  onClick={() => {
+                    setMindMapToDelete(null);
+                    setDeleteError(null);
+                  }}
+                >
+                  {deleteError ? 'Close' : 'Cancel'}
+                </AlertDialogCancel>
+                {!deleteError && (
+                  <AlertDialogAction
+                    className="bg-red-500 hover:bg-red-600"
+                    onClick={() => {
+                      if (mindMapToDelete) {
+                        handleDeleteMap(mindMapToDelete);
+                      }
+                    }}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                )}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ export default function SecondaryNav({
   setName: string 
 }) {
   const flashcardsPath = user ? `/${user}/${setName}` : '#'
-  const mindMapPath = user ? `/${user}/${setName}/mindmap` : '#'
+  const mindMapPath = user ? `/${user}/${setName}/mindmaps` : '#'
   const quizPath = user ? `/${user}/${setName}/quiz` : '#'
 
   return (
