@@ -32,8 +32,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Menu from '@/components/Menu'  // Import the Menu component
 import SecondaryNav from '@/components/FlashcardNav';
-import { BookOpen, Lock, XCircle } from "lucide-react";
-
 
 const initialNodes: any = [];
 const initialEdges: any = [];
@@ -53,10 +51,7 @@ interface FlashcardSet {
 export default function Page() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [error, setError] = useState<string | null>(null);
-  const [newMapError, setMapError] = useState('')
-  const [isLoading, setIsLoading] = useState(true);
-  const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
+  const [, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState<{
     source: string | null,
@@ -67,7 +62,7 @@ export default function Page() {
     target: null,
     relationshipLabel: ''
   });
-  const params = useParams<{ user: string; setName: string; mindMapName: string }>()
+  const params = useParams<{ user: string; setName: string }>()
 
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
@@ -84,7 +79,7 @@ export default function Page() {
       if (params.user) {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/app/${params.user}/mindmap/state/${decodeURIComponent(params.setName)}`, {
+            `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
               method: 'GET',
               credentials: 'include',
               headers: {
@@ -94,102 +89,31 @@ export default function Page() {
           );
 
           if (!response.ok) {
-            if (response.status === 404) {
-              console.log("creating new mind map and saving its data...")
-              // create new mind map here and proceed with current logic
-              try {
-                const response = await fetch(
-                  `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    }
-                  }
-                );
-      
-                if (!response.ok) {
-                  if (response.status === 403) {
-                    setError('private');
-                  } else {
-                    setError('general');
-                  }
-                  throw new Error('Failed to fetch flashcard set');
-                }
-      
-      
-                const data = await response.json();
-      
-                if (!data.IsPublic && (!user || user.nickname !== params.user)) {
-                  setError('private');
-                  setIsLoading(false);
-                  return;
-                }
-      
-                setFlashcardSet(data)
-                const flashcards = data.Flashcards
-                
-                // Calculate starting x and y to center nodes
-                const totalNodes = flashcards.length;
-                const startX = window.innerWidth / 2 - 100; // Adjust based on node width
-                const startY = window.innerHeight / 2 - (totalNodes * 150 / 2);
-                let nodeList = []
-                for(let i = 0; i < flashcards.length; i++) {
-                  const node = { 
-                    id: uuidv4(), 
-                    flashcardID: flashcards[i].ID,
-                    position: { 
-                      x: startX, 
-                      y: startY + i * 150 
-                    }, 
-                    data: { label: flashcards[i].Term} 
-                  }
-                  nodeList.push(node)
-                  setNodes(prevNodes => [...prevNodes, node])
-                }
-
-
-
-                const formattedNodeLayouts = nodeList.map((node) => ({
-                  flashcardID: node.flashcardID,
-                  MindMapID: 0,
-                  xPosition: node.position.x,
-                  yPosition: node.position.y,
-              }));
-
-                const requestData = {
-                  title: params.mindMapName,
-                  nickname: params.user,
-                  setID: data.ID,
-                  isPublic: data.IsPublic,
-                  connections: [],
-                  nodeLayouts: formattedNodeLayouts
-
-                };
-          
-                const createMapRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/create`, {
-                  method: 'POST',
-                  credentials: 'include',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(requestData),
-                });
-
-
-                const createMapData = await createMapRes.json()
-                console.log(createMapData)
-
-                setIsLoading(false);
-              } catch (error) {
-                console.error('Error fetching flashcard set:', error);
-                setIsLoading(false);
-              }
-            }
+            throw new Error('Failed to fetch flashcard set');
           }
 
-        } catch(e) {
-          return e
+          const data = await response.json();
+          setFlashcardSet(data)
+          const flashcards = data.Flashcards
+          
+          // Calculate starting x and y to center nodes
+          const totalNodes = flashcards.length;
+          const startX = window.innerWidth / 2 - 100; // Adjust based on node width
+          const startY = window.innerHeight / 2 - (totalNodes * 150 / 2);
+
+          for(let i = 0; i < flashcards.length; i++) {
+            const node = { 
+              id: uuidv4(), 
+              position: { 
+                x: startX, 
+                y: startY + i * 150 
+              }, 
+              data: { label: flashcards[i].Term} 
+            }
+            setNodes(prevNodes => [...prevNodes, node])
+          }
+        } catch (error) {
+          console.error('Error fetching flashcard set:', error);
         }
       }
     }
@@ -197,7 +121,7 @@ export default function Page() {
     if (params) {
       fetchSet();
     }
-  }, [params, user, setNodes]);
+  }, [params, setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -234,59 +158,6 @@ export default function Page() {
       handleSaveRelationship();
     }
   };
-
-  if (isLoading || isUserLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
-          <BookOpen className="mx-auto h-16 w-16 text-black animate-pulse" />
-          <p className="mt-4 text-xl text-gray-700">Preparing your learning journey...</p>
-        </div>
-      </div>
-    );
-  }
-
-
-  if (error === 'private') {
-    return (
-      <div>
-        <Menu />
-        {params && <SecondaryNav user={params.user} setName={params.setName} />}
-        <div className="min-h-[60vh] flex items-center justify-center bg-gray-50">
-          <div className="text-center max-w-md mx-auto p-8">
-            <Lock className="mx-auto h-16 w-16 text-gray-500 mb-4" />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-3">Private Flashcard Set</h2>
-            <p className="text-gray-600 mb-4">
-              This flashcard set is private and can only be accessed by its creator.
-            </p>
-            {!user && (
-              <p className="text-sm text-gray-500">
-                If this is your set, please log in to view it.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-
-  if (!flashcardSet) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="text-center bg-white p-8 rounded-xl shadow-lg">
-          <XCircle className="mx-auto h-16 w-16 text-red-500 mb-4" />
-          <p className="text-red-600 text-2xl font-semibold">Could not load your flashcard set</p>
-          <button 
-            onClick={() => router.push('/dashboard')}
-            className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-          >
-            Return to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
