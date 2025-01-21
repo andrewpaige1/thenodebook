@@ -195,7 +195,6 @@ export default function MindMapList({
     const startX = window.innerWidth / 2 - 100; // Center horizontally
     const startY = window.innerHeight / 2 - (totalNodes * 150) / 2; // Center vertically based on the total number of nodes
     // E.g., place them in a vertical column
-    // In real usage, you might let the user place them or randomize
     const nodeLayouts = flashcards.map((fc, i) => ({
       flashcardID: fc.ID,
       MindMapID: 0, // The backend can fill this
