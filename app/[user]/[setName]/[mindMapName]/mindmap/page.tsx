@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import Menu from '@/components/Menu'  // Import the Menu component
+import Menu from '@/components/Menu'
 import SecondaryNav from '@/components/FlashcardNav';
 
 const initialNodes: any = [];
@@ -78,8 +78,6 @@ export default function Page() {
     async function fetchSet() {
       if (params.user) {
         try {
-
-          // /app/{nickname}/mindmap/state/{title
           const mapStateResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/app/${params.user}/mindmap/state/${decodeURIComponent(params.mindMapName)}`, {
               method: 'GET',
@@ -97,7 +95,6 @@ export default function Page() {
           const mapData = await mapStateResponse.json()
           console.log(mapData)
 
-
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
               method: 'GET',
@@ -114,25 +111,20 @@ export default function Page() {
 
           const data = await response.json();
           setFlashcardSet(data)
-          const flashcards = data.Flashcards
-          console.log(flashcards)
-          
-          // Calculate starting x and y to center nodes
-         // const totalNodes = flashcards.length;
-         // const startX = window.innerWidth / 2 - 100; // Adjust based on node width
-         // const startY = window.innerHeight / 2 - (totalNodes * 150 / 2);
 
-          for(let i = 0; i < mapData.nodeLayouts.length; i++) {
-            const node = { 
-              id: uuidv4(), 
-              position: { 
-                x: mapData.nodeLayouts[i].XPosition, 
-                y: mapData.nodeLayouts[i].YPosition
-              }, 
-              data: { label: flashcards[i].Term} 
-            }
-            setNodes(prevNodes => [...prevNodes, node])
-          }
+          // Create all nodes at once instead of individually
+          const newNodes = mapData.nodeLayouts.map((nodeLayout: any) => ({
+            id: nodeLayout.ID.toString(),
+            position: {
+              x: nodeLayout.XPosition,
+              y: nodeLayout.YPosition
+            },
+            data: { label: nodeLayout.Data }
+          }));
+          console.log(newNodes)
+          // Set all nodes at once
+          setNodes(newNodes);
+          
         } catch (error) {
           console.error('Error fetching flashcard set:', error);
         }
@@ -146,7 +138,6 @@ export default function Page() {
 
   const onConnect = useCallback(
     (params: Connection) => {
-      // Open dialog to get relationship details
       setConnectionInfo({
         source: params.source || null,
         target: params.target || null,
@@ -173,7 +164,6 @@ export default function Page() {
     }
   };
 
-  // Handle Enter key press in the input
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSaveRelationship();
@@ -196,37 +186,6 @@ export default function Page() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          edgeTypes={{
-            step: ({ sourceX, sourceY, targetX, targetY, label }) => {
-              // Custom edge rendering to show label on top of the line
-              return (
-                <>
-                  <path
-                    d={`M ${sourceX} ${sourceY} L ${targetX} ${targetY}`}
-                    fill="none"
-                    stroke="#4a5568"
-                    strokeWidth={2}
-                  />
-                  <text 
-                    x={(sourceX + targetX) / 2} 
-                    y={(sourceY + targetY) / 2} 
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={10}
-                    fontWeight="bold"
-                    fill="#2d3748"
-                    style={{ 
-                      backgroundColor: 'white', 
-                      padding: '2px 5px', 
-                      borderRadius: '3px' 
-                    }}
-                  >
-                    {label}
-                  </text>
-                </>
-              );
-            }
-          }}
         >
           <Controls />
           <MiniMap />

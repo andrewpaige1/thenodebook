@@ -197,6 +197,7 @@ export default function MindMapList({
     // E.g., place them in a vertical column
     const nodeLayouts = flashcards.map((fc, i) => ({
       flashcardID: fc.ID,
+      data: fc.Term,
       MindMapID: 0, // The backend can fill this
       xPosition: startX, // Same horizontal alignment for all nodes
       yPosition: startY + i * 150, // Vertical spacing
