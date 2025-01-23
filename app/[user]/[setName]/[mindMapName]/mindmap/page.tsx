@@ -9,15 +9,16 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
+  applyNodeChanges,
   BackgroundVariant,
   Connection,
   Edge,
+  NodeChange,
 } from '@xyflow/react';
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
 import '@xyflow/react/dist/style.css';
 import { useParams } from 'next/navigation'
-import { v4 as uuidv4 } from 'uuid'
 
 import { Button } from "@/components/ui/button"
 import {
@@ -35,24 +36,26 @@ import SecondaryNav from '@/components/FlashcardNav';
 
 const initialNodes: any = [];
 const initialEdges: any = [];
- 
+
 interface Flashcard {
-    ID: number;
-    Term: string;
-    Solution: string;
-    Concept: string;
+  ID: number;
+  Term: string;
+  Solution: string;
+  Concept: string;
 }
 
 interface FlashcardSet {
-    Title: string;
-    Flashcards: Flashcard[];
+  Title: string;
+  Flashcards: Flashcard[];
 }
 
 export default function Page() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [mapID, setMapID] = useState(0);
   const [, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false); // NEW: Track if a node has moved
   const [connectionInfo, setConnectionInfo] = useState<{
     source: string | null,
     target: string | null,
@@ -62,7 +65,7 @@ export default function Page() {
     target: null,
     relationshipLabel: ''
   });
-  const params = useParams<{ user: string; setName: string; mindMapName: string }>()
+  const params = useParams<{ user: string; setName: string; mindMapName: string }>();
 
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
@@ -71,15 +74,17 @@ export default function Page() {
     if (!user && !isUserLoading) {
       router.push('/api/auth/login');
     }
-  }, [user, isUserLoading, router])
+  }, [user, isUserLoading, router]);
 
   // Data fetching
   useEffect(() => {
     async function fetchSet() {
       if (params.user) {
         try {
+          // 1) Get mind map state
           const mapStateResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/app/${params.user}/mindmap/state/${decodeURIComponent(params.mindMapName)}`, {
+            `${process.env.NEXT_PUBLIC_API_URL}/app/${params.user}/mindmap/state/${decodeURIComponent(params.mindMapName)}`,
+            {
               method: 'GET',
               credentials: 'include',
               headers: {
@@ -92,11 +97,12 @@ export default function Page() {
             throw new Error('Failed to get state');
           }
 
-          const mapData = await mapStateResponse.json()
-          console.log(mapData)
+          const mapData = await mapStateResponse.json();
 
+          // 2) Get flashcard set
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`, {
+            `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`,
+            {
               method: 'GET',
               credentials: 'include',
               headers: {
@@ -110,21 +116,31 @@ export default function Page() {
           }
 
           const data = await response.json();
-          setFlashcardSet(data)
+          setFlashcardSet(data);
+          setMapID(mapData.id);
 
-          // Create all nodes at once instead of individually
+          // 3) Create new nodes from server data
           const newNodes = mapData.nodeLayouts.map((nodeLayout: any) => ({
-            id: nodeLayout.ID.toString(),
+            id: nodeLayout.FlashcardID.toString(),
             position: {
               x: nodeLayout.XPosition,
               y: nodeLayout.YPosition
             },
             data: { label: nodeLayout.Data }
           }));
-          console.log(newNodes)
-          // Set all nodes at once
           setNodes(newNodes);
-          
+
+          // 4) Create new edges from server data
+          const newEdges = mapData.connections.map((c: any) => ({
+            id: `${c.SourceID}-${c.TargetID}`,
+            source: c.SourceID.toString(),
+            target: c.TargetID.toString(),
+            label: c.Relationship || 'Related',
+            type: 'step',
+            style: { stroke: '#4a5568', strokeWidth: 2 }
+          }));
+          setEdges(newEdges);
+
         } catch (error) {
           console.error('Error fetching flashcard set:', error);
         }
@@ -134,8 +150,24 @@ export default function Page() {
     if (params) {
       fetchSet();
     }
-  }, [params, setNodes]);
+  }, [params, setNodes, setEdges]);
 
+  // Custom handler for node changes so we can detect position changes
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      // first, call the default handler from useNodesState
+      onNodesChange(changes);
+
+      // if any node was moved, set hasChanges to true
+      const moved = changes.some(change => change.type === 'position');
+      if (moved) {
+        setHasChanges(true);
+      }
+    },
+    [onNodesChange]
+  );
+
+  // Called when a new edge/connection is drawn
   const onConnect = useCallback(
     (params: Connection) => {
       setConnectionInfo({
@@ -148,7 +180,8 @@ export default function Page() {
     []
   );
 
-  const handleSaveRelationship = () => {
+  // Save button for edges
+  const handleSaveRelationship = async () => {
     if (connectionInfo.source && connectionInfo.target) {
       const newEdge: Edge = {
         id: `${connectionInfo.source}-${connectionInfo.target}`,
@@ -158,6 +191,23 @@ export default function Page() {
         type: 'step',
         style: { stroke: '#4a5568', strokeWidth: 2 }
       };
+
+      const updateData = {
+        mindMapID: mapID,
+        nickname: params.user,
+        source: Number(connectionInfo.source),
+        target: Number(connectionInfo.target),
+        relationshipLabel: connectionInfo.relationshipLabel
+      };
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/updateConnections`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
 
       setEdges((eds) => addEdge(newEdge, eds));
       setIsDialogOpen(false);
@@ -170,29 +220,79 @@ export default function Page() {
     }
   };
 
+  const handleSaveMap = useCallback(async () => {
+    try {
+      // Build array of nodes with all required information
+      const nodeUpdates = nodes.map(node => ({
+        flashcardID: parseInt(node.id),
+        xPosition: node.position.x,
+        yPosition: node.position.y,
+        data: node.data.label // Include the node's label data
+      }));
+  
+      const payload = {
+        mindMapID: mapID,
+        nickname: params.user,
+        nodes: nodeUpdates
+      };
+  
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/updateNodeLayout`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+  
+      if (!res.ok) {
+        throw new Error('Error updating node layouts');
+      }
+  
+      // If successful, reset the "hasChanges" state
+      setHasChanges(false);
+  
+    } catch (error) {
+      console.error('Error saving node layouts:', error);
+    }
+  }, [nodes, mapID, params.user]);
+
   return (
     <>
       <Menu />
       <SecondaryNav user={params.user} setName={params.setName} />
-        {!user && (
-          <div className="max-w-4xl mx-auto p-4">
-            <h2>Please login or sign up to use this feature</h2>
+      {!user && (
+        <div className="max-w-4xl mx-auto p-4">
+          <h2>Please login or sign up to use this feature</h2>
+        </div>
+      )}
+      {user && (
+        <div style={{ width: '100vw', height: 'calc(100vh - 64px)', position: 'relative' }}>
+          {/* The Save button in top-right corner of the mind map */}
+          <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 4 }}>
+            <Button onClick={handleSaveMap} disabled={!hasChanges}>
+              Save
+            </Button>
           </div>
-          )}
-        {user && <div style={{ width: '100vw', height: 'calc(100vh - 64px)' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-        >
-          <Controls />
-          <MiniMap />
-          <Background variant={BackgroundVariant.Cross} gap={12} size={1} />
-        </ReactFlow>
-      </div>}
 
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={handleNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+          >
+            <Controls />
+            <MiniMap />
+            <Background variant={BackgroundVariant.Cross} gap={12} size={1} />
+          </ReactFlow>
+        </div>
+      )}
+
+      {/* Dialog for describing relationships when a connection is drawn */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -206,15 +306,17 @@ export default function Page() {
               <Label htmlFor="relationship" className="text-right">
                 Connection
               </Label>
-              <Input 
-                id="relationship" 
+              <Input
+                id="relationship"
                 placeholder="e.g., 'Builds upon', 'Contrasts with'"
                 className="col-span-3"
                 value={connectionInfo.relationshipLabel}
-                onChange={(e) => setConnectionInfo(prev => ({
-                  ...prev, 
-                  relationshipLabel: e.target.value
-                }))}
+                onChange={(e) =>
+                  setConnectionInfo((prev) => ({
+                    ...prev,
+                    relationshipLabel: e.target.value,
+                  }))
+                }
                 onKeyDown={handleKeyDown}
               />
             </div>
