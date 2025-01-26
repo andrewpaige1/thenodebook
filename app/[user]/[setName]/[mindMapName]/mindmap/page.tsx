@@ -9,7 +9,6 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
-  applyNodeChanges,
   BackgroundVariant,
   Connection,
   Edge,

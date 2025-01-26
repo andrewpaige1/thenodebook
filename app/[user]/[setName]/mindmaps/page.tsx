@@ -58,7 +58,7 @@ export default function MindMapList({
   params: Promise<{ user: string; setName: string }>
 }) {
   const router = useRouter();
-  const { user, isLoading: isUserLoading } = useUser();
+  const { isLoading: isUserLoading } = useUser();
   const [mindMaps, setMindMaps] = useState<MindMap[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
