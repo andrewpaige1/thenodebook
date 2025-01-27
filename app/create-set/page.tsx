@@ -9,6 +9,7 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import { redirect } from "next/navigation";
 import Menu from '@/components/Menu';
 import { Switch } from "@/components/ui/switch";
+import { v4 as uuidv4 } from 'uuid';
 
 interface FlashCard {
   id: string;
@@ -85,7 +86,7 @@ const FlashCardCreator = () => {
     if (!currentCard.term?.trim()) return;
     
     setCards(prev => [...prev, {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       term: currentCard.term || '',
       solution: currentCard.solution || '',
       concept: currentCard.concept || ''

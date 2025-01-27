@@ -11,6 +11,7 @@ import Menu from '@/components/Menu';
 import { Switch } from "@/components/ui/switch";
 import { useParams } from 'next/navigation'
 import ErrorAlert from '@/components/ErrorAlert';
+import { v4 as uuidv4 } from 'uuid';
 
 interface FlashCard {
   id: string;
@@ -157,7 +158,7 @@ interface FlashCard {
     if (!currentCard.term?.trim()) return;
     
     setCards(prev => [...prev, {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       term: currentCard.term || '',
       solution: currentCard.solution || '',
       concept: currentCard.concept || ''
