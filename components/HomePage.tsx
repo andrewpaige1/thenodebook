@@ -31,7 +31,9 @@ export default function UserFlashcardSets() {
 
   useEffect(() => {
     // Redirect to login if not authenticated
-    if (!isLoading && !user) {
+    if (isLoading) return;   // Wait until done loading
+
+    if (!user) {
       router.push('/api/auth/login');
       return;
     }
@@ -63,9 +65,7 @@ export default function UserFlashcardSets() {
       }
     }
 
-    if (user) {
       fetchUserFlashcardSets();
-    }
   }, [user, isLoading, router]);
 
   // Loading state
