@@ -60,7 +60,7 @@ const Menu: React.FC = () => {
     return (
       <div className="flex items-center justify-end p-4">
         <Button asChild>
-          <Link href="/api/auth/login">Login</Link>
+          <Link href="/api/auth/login" prefetch={false}>Login</Link>
         </Button>
       </div>
     );
