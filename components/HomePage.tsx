@@ -39,33 +39,37 @@ export default function UserFlashcardSets() {
     }
 
     // Fetch flashcard sets when user is authenticated
-    async function fetchUserFlashcardSets() {
-      if (!user?.nickname) return;
-
+    const doAddAndFetch = async () => {
       try {
+        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/users`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nickname: user.nickname })
+        });
+        if (!resp.ok) {
+          throw new Error('Failed to add user');
+        }
+  
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/users/${user.nickname}/flashcard-sets`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
-
         if (!response.ok) {
           throw new Error('Failed to fetch flashcard sets');
         }
-
         const data: FlashcardSet[] = await response.json();
         setFlashcardSets(data);
       } catch (error) {
-        console.error('Error fetching flashcard sets:', error);
+        console.error(error);
         setFlashcardSets([]);
       } finally {
         setIsLoadingData(false);
       }
-    }
-
-      fetchUserFlashcardSets();
+    };
+  
+    doAddAndFetch();
   }, [user, isLoading, router]);
 
   // Loading state

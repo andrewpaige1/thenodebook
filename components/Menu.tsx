@@ -18,36 +18,6 @@ import { Plus } from 'lucide-react';
 const Menu: React.FC = () => {
   const { user, isLoading } = useUser();
 
-  useEffect(() => {
-    const addUserToDatabase = async () => {
-      if (!user) return;
-
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/users`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            nickname: user.nickname,
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to add user');
-        }
-
-        const data = await response.json()
-        console.log(data.message)
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    addUserToDatabase();
-  }, [user]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-end p-4">
