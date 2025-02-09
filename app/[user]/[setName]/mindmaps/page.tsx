@@ -120,12 +120,13 @@ export default function MindMapList({
     if (!newMapTitle.trim()) return;
 
     setTitleError(null);
+    console.log(decodeURIComponent(resolvedParams.setName))
 
     // 1) Check for duplicate mind map title
     const checkData = {
       title: newMapTitle.trim(),
       nickname: resolvedParams.user,
-      setName: resolvedParams.setName,
+      setName: decodeURIComponent(resolvedParams.setName),
     };
 
     try {
@@ -142,7 +143,6 @@ export default function MindMapList({
       );
 
       const checkResData = await checkResponse.json();
-
       if (!checkResponse.ok) {
         if (checkResponse.status === 409) {
           setTitleError('A mind map with this title already exists');
@@ -160,7 +160,7 @@ export default function MindMapList({
     let setData: FlashcardSet;
     try {
       const setResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/app/users/${resolvedParams.user}/sets/${encodeURIComponent(
+        `${process.env.NEXT_PUBLIC_API_URL}/app/users/${resolvedParams.user}/sets/${decodeURIComponent(
           resolvedParams.setName
         )}`,
         {
