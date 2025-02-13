@@ -3,11 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { useUser } from '@auth0/nextjs-auth0/client';
 import { Brain, BookOpen, Users } from 'lucide-react';
 
 export default function LandingPage() {
-  const { user } = useUser();
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -22,16 +20,9 @@ export default function LandingPage() {
             understanding, not memorization.
           </p>
           <div className="mt-8 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-            {!user && (
               <Button asChild size="lg">
                 <Link href="/api/auth/login">Get Started</Link>
               </Button>
-            )}
-            {user && (
-              <Button asChild size="lg">
-                <Link href="/create-set">Create Your First Mindmap</Link>
-              </Button>
-            )}
             {/* Updated "Learn More" button with custom classes */}
             <Button
               asChild
@@ -104,16 +95,9 @@ export default function LandingPage() {
             designed for true understanding and retention.
           </p>
           <div className="mt-8 flex justify-center">
-            {!user && (
               <Button asChild size="lg">
                 <Link href="/api/auth/login">Sign Up Now</Link>
               </Button>
-            )}
-            {user && (
-              <Button asChild size="lg">
-                <Link href="/create-set">Build a Mindmap</Link>
-              </Button>
-            )}
           </div>
         </div>
       </section>
@@ -121,9 +105,6 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-300 py-6">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm">
-            &copy; {new Date().getFullYear()} Mindthred. All rights reserved.
-          </p>
         </div>
       </footer>
     </div>
