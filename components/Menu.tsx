@@ -30,6 +30,7 @@ const Menu: React.FC = () => {
     return (
       <div className="flex items-center justify-end p-4">
         <Button asChild>
+          {/* eslint-disable @next/next/no-html-link-for-pages */}
           <a href="/auth/login">Login</a>
         </Button>
       </div>
@@ -67,6 +68,7 @@ const Menu: React.FC = () => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
+            {/* eslint-disable @next/next/no-html-link-for-pages */}
             <a href="/auth/logout">Logout</a>
             </DropdownMenuItem>
           </DropdownMenuContent>
