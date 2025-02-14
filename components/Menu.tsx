@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useUser } from '@auth0/nextjs-auth0';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -30,7 +30,7 @@ const Menu: React.FC = () => {
     return (
       <div className="flex items-center justify-end p-4">
         <Button asChild>
-          <Link href="/api/auth/login" prefetch={false}>Login</Link>
+          <a href="/auth/login">Login</a>
         </Button>
       </div>
     );
@@ -67,7 +67,7 @@ const Menu: React.FC = () => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href="/api/auth/logout">Logout</Link>
+            <a href="/auth/logout">Logout</a>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

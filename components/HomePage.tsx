@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Book } from "lucide-react";
 import Link from "next/link";
 import FlashcardSetActions from "./FlashcardSetActions";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useUser } from "@auth0/nextjs-auth0";
 import { useRouter } from 'next/navigation';
 
 interface FlashcardSet {
@@ -34,7 +34,7 @@ export default function UserFlashcardSets() {
     if (isLoading) return;   // Wait until done loading
 
     if (!user) {
-      router.push('/api/auth/login');
+      router.push('/auth/login');
       return;
     }
 

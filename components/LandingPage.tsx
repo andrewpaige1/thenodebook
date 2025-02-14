@@ -21,7 +21,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-8 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
               <Button asChild size="lg">
-                <Link href="/api/auth/login">Get Started</Link>
+                <Link href="/auth/login">Get Started</Link>
               </Button>
             {/* Updated "Learn More" button with custom classes */}
             <Button
@@ -96,7 +96,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-8 flex justify-center">
               <Button asChild size="lg">
-                <Link href="/api/auth/login">Sign Up Now</Link>
+                <Link href="/auth/login">Sign Up Now</Link>
               </Button>
           </div>
         </div>

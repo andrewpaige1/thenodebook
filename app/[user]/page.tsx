@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Book, Clock, Bookmark, Share2, Check } from "lucide-react";
 import Link from "next/link";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useUser } from "@auth0/nextjs-auth0";
 import Menu from "@/components/Menu";
 import { useToast } from "@/hooks/use-toast"
 

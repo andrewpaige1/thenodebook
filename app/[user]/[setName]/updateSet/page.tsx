@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Book, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Edit2, Check, X, Send, Globe2, Lock } from 'lucide-react';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useUser } from '@auth0/nextjs-auth0';
 import { redirect, useRouter } from "next/navigation";
 import Menu from '@/components/Menu';
 import { Switch } from "@/components/ui/switch";
@@ -49,7 +49,7 @@ interface FlashCard {
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!userLoading && !user) {
-      redirect('/api/auth/login');
+      redirect('/auth/login');
       return;
     }
 
