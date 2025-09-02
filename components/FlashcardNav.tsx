@@ -1,5 +1,7 @@
+
 import Link from 'next/link'
 import { Book, Network, Pencil } from 'lucide-react'
+import { usePathname } from 'next/navigation';
 
 export default function SecondaryNav({ 
   user, 
@@ -11,6 +13,7 @@ export default function SecondaryNav({
   const flashcardsPath = user ? `/${user}/${setName}` : '#'
   const mindMapPath = user ? `/${user}/${setName}/mindmaps` : '#'
   const quizPath = user ? `/${user}/${setName}/quiz` : '#'
+  const pathname = usePathname();
 
   return (
     <div className="border-b bg-white">
@@ -20,7 +23,7 @@ export default function SecondaryNav({
             <Link 
               href={flashcardsPath}
               className={`flex items-center space-x-2 py-3 border-b-2 transition-colors ${
-                !window.location.pathname.includes('mindmap') && !window.location.pathname.includes('quiz')
+                !pathname.includes('mindmap') && !pathname.includes('quiz')
                   ? 'border-blue-600 text-blue-600' 
                   : 'border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-300'
               }`}
@@ -31,7 +34,7 @@ export default function SecondaryNav({
             <Link 
               href={mindMapPath}
               className={`flex items-center space-x-2 py-3 border-b-2 transition-colors ${
-                window.location.pathname.includes('mindmap') 
+                pathname.includes('mindmap') 
                   ? 'border-blue-600 text-blue-600' 
                   : 'border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-300'
               }`}
@@ -42,7 +45,7 @@ export default function SecondaryNav({
             <Link 
               href={quizPath}
               className={`flex items-center space-x-2 py-3 border-b-2 transition-colors ${
-                window.location.pathname.includes('quiz') 
+                pathname.includes('quiz') 
                   ? 'border-blue-600 text-blue-600' 
                   : 'border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-300'
               }`}
