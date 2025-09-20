@@ -1,5 +1,5 @@
 export async function fetchAccessToken(): Promise<string> {
-  const baseUrl = process.env.APP_BASE_URL || "http://localhost:3000" || "https://mindthred.com"
+  const baseUrl = process.env.APP_BASE_URL!;
   try {
     const res = await fetch(`${baseUrl}/api/auth/token/`, {
       method: "GET"
