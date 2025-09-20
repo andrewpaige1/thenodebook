@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import { SetRepository } from '@/repositories/setRepository';
+import { FlashcardSet } from '@/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +13,7 @@ import Menu from '@/components/Menu';
 import { Switch } from "@/components/ui/switch";
 import { useParams } from 'next/navigation'
 import ErrorAlert from '@/components/ErrorAlert';
+import { fetchAccessToken } from '@/services/authService';
 import { v4 as uuidv4 } from 'uuid';
 
 interface FlashCard {
@@ -20,9 +23,20 @@ interface FlashCard {
   concept: string;
 }
 
+// Used for backend payload
+interface Flashcard {
+  ID?: number;
+  Term: string;
+  Solution: string;
+  Concept: string;
+  shouldDelete?: boolean;
+  shouldCreate?: boolean;
+  shouldUpdate?: boolean;
+}
+
   const UpdateFlashCardSet = () => {
   const { user, isLoading: userLoading } = useUser();
-  const params = useParams<{ user: string; setName: string }>()
+  const params = useParams<{ user: string; setName: string, setID: string }>()
   const [setName, setSetName] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [cards, setCards] = useState<FlashCard[]>([]);
@@ -32,7 +46,8 @@ interface FlashCard {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [originalSetName, setOriginalSetName] = useState('');
+  const [, setOriginalSetName] = useState('');
+  const [deletedCardIds, setDeletedCardIds] = useState<string[]>([]);
   interface ErrorState {
     message: string | null;
   }
@@ -50,31 +65,19 @@ interface FlashCard {
     // Redirect to login if not authenticated
     if (!userLoading && !user) {
       redirect('/auth/login');
-      return;
     }
 
     async function fetchSet() {
-      if (!params?.user || !params?.setName) return;
+      if (!params?.setID) return;
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`,
-          {
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          }
-        );
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch flashcard set');
-        }
-
-        const data = await response.json();
-        
+      //  const data = await response.json();
+        const token = await fetchAccessToken()
+        const setRepo = new SetRepository()
+        const data = await setRepo.getByID(params.setID, token)
         // Only allow editing if user owns the set
-        if (user?.nickname !== params.user) {
+        if (!data.IsOwner) {
           redirect('/');
         }
 
@@ -83,16 +86,22 @@ interface FlashCard {
         setIsPublic(data.IsPublic);
         
         // Transform the flashcards to match our format
-        const transformedCards = data.Flashcards.map((card: { ID: any; Term: any; Solution: any; Concept: any; }) => ({
-          id: String(card.ID),
-          term: card.Term,
-          solution: card.Solution,
-          concept: card.Concept || ''
-        }));
+      const transformedCards = data.Flashcards.map((card: Flashcard) => ({
+        id: card.ID !== undefined ? String(card.ID) : '0',
+        term: card.Term,
+        solution: card.Solution,
+        concept: card.Concept || ''
+      }));
         
         setCards(transformedCards);
-      } catch (error) {
-        console.log(error)
+      } catch(error) {
+        setUpdateError(
+          typeof error === "object" && error !== null && "message" in error
+            ? String((error as { message?: unknown }).message)
+            : "An error occurred"
+        )
+        //console.log(error)
+       // return error
       } finally {
         setIsLoading(false);
       }
@@ -105,50 +114,46 @@ interface FlashCard {
 
   const handleUpdate = async () => {
     if (!setName.trim() || !user?.nickname) return;
-
     try {
       setIsSubmitting(true);
-      
-      const transformedCards = cards.map(card => ({
-        term: card.term,
-        solution: card.solution,
-        concept: card.concept
-      }));
-
-      const requestData = {
-        name: setName,
-        originalName: originalSetName,
-        nickname: user.nickname,
-        cards: transformedCards,
-        isPublic: isPublic
+      const repo = new SetRepository();
+      const token = await fetchAccessToken();
+      const setID = params.setID;
+      const updatePayload: Partial<FlashcardSet> = {
+        Title: setName,
+        IsPublic: isPublic,
+        Flashcards: [
+          // Cards to keep/update/create
+          ...cards.map(card => {
+            const idNum = (card.id && card.id !== '0' && !isNaN(Number(card.id))) ? Number(card.id) : 0;
+            return {
+              ID: idNum,
+              Term: card.term,
+              Solution: card.solution,
+              Concept: card.concept,
+              shouldDelete: false,
+              shouldCreate: idNum === 0,
+              shouldUpdate: idNum !== 0
+            };
+          }),
+          // Cards to delete
+          ...deletedCardIds.map(id => ({
+            ID: id && id !== '0' && !isNaN(Number(id)) ? Number(id) : 0,
+            Term: '',
+            Solution: '',
+            Concept: '',
+            shouldDelete: true,
+            shouldCreate: false,
+            shouldUpdate: false
+          }))
+        ],
       };
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/updateSet`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (!response.ok) {
-        if (response.status === 409) {
-          setUpdateError("You already have a set with this name")
-        }
-      }
-      router.push(`/${user.nickname}/${encodeURIComponent(setName)}`);
+      const updatedSet = await repo.update(setID, updatePayload, token);
+      router.push(`/sets/${updatedSet.PublicID}`);
     } catch (error) {
-      if (error instanceof Response) {
-        if (error.status === 409) {
-          setUpdateError("You already have a set with this name");
-        } else {
-          setUpdateError("Failed to update flashcard set");
-        }      
-      }
-      return error
-    } 
-    finally {
+      setUpdateError("Failed to update flashcard set");
+      return error;
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -156,14 +161,12 @@ interface FlashCard {
   // Reuse the same helper functions from FlashCardCreator
   const addCard = () => {
     if (!currentCard.term?.trim()) return;
-    
     setCards(prev => [...prev, {
-      id: uuidv4(),
+      id: uuidv4(), // Use empty string for new cards
       term: currentCard.term || '',
       solution: currentCard.solution || '',
       concept: currentCard.concept || ''
     }]);
-    
     setCurrentCard({});
     setActiveStep(0);
   };
@@ -176,6 +179,7 @@ interface FlashCard {
 
   const removeCard = (id: string) => {
     setCards(prev => prev.filter(card => card.id !== id));
+    setDeletedCardIds(prev => [...prev, id]);
   };
 
   const handleStepChange = (direction: 'next' | 'prev') => {

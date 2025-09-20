@@ -25,12 +25,18 @@ const ProfileFlashcardSets = () => {
       if (!user?.nickname) return;
       try {
         const repo = new SetRepository();
+       // const flashcardRepo = new FlashcardRepository();
         const token = await fetchAccessToken();
         const data = await repo.getAll(user.nickname, token);
+        // Fetch flashcards for each set using the repository
+     /*   for (const set of data) {
+          const flashcards = await flashcardRepo.getAll(set.PublicID, token);
+          set.Flashcards = flashcards;
+        }*/
         setSets(data);
       } catch (error) {
-      //  console.error('Error fetching sets:', error);
-      return error
+        //console.error('Error fetching sets:', error);
+        return error
       } finally {
         setIsLoading(false);
       }

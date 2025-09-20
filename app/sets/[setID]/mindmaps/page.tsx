@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { MindMapRepository } from '@/repositories/mindMapRepository';
+import { getAccessToken } from '@auth0/nextjs-auth0';
 import { useRouter } from 'next/navigation';
 import { useUser } from "@auth0/nextjs-auth0";
 import {
@@ -13,6 +15,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -32,30 +35,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import Menu from "@/components/Menu";
 import SecondaryNav from "@/components/FlashcardNav";
+import { fetchAccessToken } from '@/services/authService';
+import { FlashcardRepository } from '@/repositories/flashcardRepository';
 
 interface MindMap {
   ID: number;
   Title: string;
-}
-
-interface Flashcard {
-  ID: number;
-  Term: string;
-  Solution: string;
-  Concept: string;
-}
-
-interface FlashcardSet {
-  ID: number;
-  Title: string;
-  IsPublic: boolean;
-  Flashcards: Flashcard[];
+  PublicID: string
 }
 
 export default function MindMapList({
   params
 }: {
-  params: Promise<{ user: string; setName: string }>
+  params: Promise<{ user: string; setName: string; setID: string }>
 }) {
   const router = useRouter();
   const { isLoading: isUserLoading } = useUser();
@@ -74,8 +66,9 @@ export default function MindMapList({
   // Creation states
   const [newMapTitle, setNewMapTitle] = useState("");
   const [titleError, setTitleError] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
 
-  const [resolvedParams, setResolvedParams] = useState<{ user: string; setName: string } | null>(null);
+  const [resolvedParams, setResolvedParams] = useState<{ user: string; setName: string; setID: string} | null>(null);
 
   // Resolve params from the promise
   useEffect(() => {
@@ -86,157 +79,60 @@ export default function MindMapList({
   useEffect(() => {
     async function fetchMindMaps() {
       if (!resolvedParams) return;
-
+      setIsLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/app/${resolvedParams.user}/${resolvedParams.setName}/mindmaps`,
-          {
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch mind maps');
-        }
-
-        const data = await response.json();
+        const token = await fetchAccessToken();
+        const repo = new MindMapRepository();
+        // setID from resolvedParams is a string, convert to number
+  const setID = resolvedParams.setID;
+  const data = await repo.getAllForSet(setID, token);
         setMindMaps(data);
       } catch (error) {
-        console.error('Error:', error);
+        //console.error('Error:', error);
         setError('Failed to load mind maps');
+        return error
       } finally {
         setIsLoading(false);
       }
     }
-
     fetchMindMaps();
   }, [resolvedParams]);
 
   const handleCreateMap = async () => {
     if (!resolvedParams) return;
     if (!newMapTitle.trim()) return;
-
     setTitleError(null);
-    console.log(decodeURIComponent(resolvedParams.setName))
-
-    // 1) Check for duplicate mind map title
-    const checkData = {
-      title: newMapTitle.trim(),
-      nickname: resolvedParams.user,
-      setName: decodeURIComponent(resolvedParams.setName),
-    };
-
     try {
-      const checkResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/checkDup`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(checkData),
-        }
-      );
+      const token = await getAccessToken();
+      const repo = new MindMapRepository();
+      const setID = resolvedParams.setID;
+      const flashcardRepo = new FlashcardRepository()
+      // Assume you have access to the flashcards for this set
+      // If not, you may need to fetch them before creating the mind map
+     const flashcards = await flashcardRepo.getAll(setID, token); 
 
-      const checkResData = await checkResponse.json();
-      if (!checkResponse.ok) {
-        if (checkResponse.status === 409) {
-          setTitleError('A mind map with this title already exists');
-          return;
-        }
-        throw new Error(checkResData.message || 'Failed to create mind map');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setTitleError('Failed to create mind map (duplicate check).');
-      return;
-    }
-
-    // 2) Fetch the flashcard set to get flashcards
-    let setData: FlashcardSet;
-    try {
-      const setResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/app/users/${resolvedParams.user}/sets/${decodeURIComponent(
-          resolvedParams.setName
-        )}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!setResponse.ok) {
-        if (setResponse.status === 403) {
-          setTitleError('Cannot create a mind map for a private set you do not own.');
-          return;
-        } else {
-          setTitleError('Failed to fetch the flashcard set');
-          return;
-        }
-      }
-
-      setData = await setResponse.json();
-    } catch (err) {
-      console.error('Error fetching flashcard set:', err);
-      setTitleError('Failed to fetch the flashcard set');
-      return;
-    }
-
-    // 3) Generate simple node layouts for each flashcard
-    const flashcards = setData.Flashcards || [];
-    const totalNodes = flashcards.length;
-    const startX = window.innerWidth / 2 - 100; // Center horizontally
-    const startY = window.innerHeight / 2 - (totalNodes * 150) / 2; // Center vertically based on the total number of nodes
-    // E.g., place them in a vertical column
-    const nodeLayouts = flashcards.map((fc, i) => ({
-      flashcardID: fc.ID,
-      data: fc.Term,
-      MindMapID: 0, // The backend can fill this
-      xPosition: startX, // Same horizontal alignment for all nodes
-      yPosition: startY + i * 150, // Vertical spacing
-    }));
-
-    // 4) Create the new mind map via API
-    const createPayload = {
-      title: newMapTitle.trim(),
-      nickname: resolvedParams.user,
-      setID: setData.ID,
-      isPublic: setData.IsPublic, // reuse the set's visibility
-      connections: [],
-      nodeLayouts,
-    };
-
-    try {
-      const createResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/create`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(createPayload),
-        }
-      );
-
-      if (!createResponse.ok) {
-        const errorData = await createResponse.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to create mind map');
-      }
-
-      // 5) If creation is successful, navigate to the new mind map
-      router.push(
-        `/${resolvedParams.user}/${resolvedParams.setName}/${encodeURIComponent(newMapTitle)}/mindmap`
-      );
-    } catch (error) {
-      console.error('Error creating mind map:', error);
+      // Spread cards vertically from the top with equal spacing
+      const startX = 200;
+      const startY = 100;
+      const spacing = 120; // px between cards vertically
+      const nodeLayouts = flashcards.map((card, i) => ({
+        FlashcardID: card.ID,
+        XPosition: startX,
+        YPosition: startY + i * spacing,
+        Data: card.Term
+      }));
+      const createPayload = {
+        Title: newMapTitle.trim(),
+        IsPublic: isPublic,
+        Connections: [],
+        NodeLayouts: [], // Don't send node layouts on create
+      };
+      const createdMap = await repo.create(setID, createPayload, token);
+      // After creation, update node layouts for the new mind map
+      await repo.updateLayouts(setID, createdMap.PublicID, nodeLayouts, token);
+      router.push(`/sets/${setID}/mindmaps/${createdMap.PublicID}`);
+    } catch {
+     // console.error('Error creating mind map:', error);
       setTitleError('Failed to create mind map');
     }
   };
@@ -245,34 +141,16 @@ export default function MindMapList({
   const handleDeleteMap = async (mindMap: MindMap) => {
     if (!resolvedParams) return;
     setDeleteError(null);
-
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/delete`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            title: mindMap.ID.toString(),
-            nickname: resolvedParams.user,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to delete mind map');
-      }
-
-      // Update the local state to remove the deleted mind map
+      const token = await fetchAccessToken();
+      const repo = new MindMapRepository();
+  const setID = resolvedParams.setID;
+  await repo.delete(setID, mindMap.PublicID, token);
       setMindMaps(mindMaps.filter(map => map.ID !== mindMap.ID));
       setShowDeleteDialog(false);
       setMindMapToDelete(null);
     } catch (error) {
-      console.error('Error:', error);
+     // console.error('Error:', error);
       setDeleteError(
         error instanceof Error
           ? error.message
@@ -299,7 +177,7 @@ export default function MindMapList({
       <div className="min-h-screen">
         <Menu />
         {resolvedParams && (
-          <SecondaryNav user={resolvedParams.user} setName={resolvedParams.setName} />
+          <SecondaryNav setID={resolvedParams.setID}/>
         )}
         <div className="min-h-[60vh] flex items-center justify-center">
           <Card className="w-96 p-6">
@@ -317,7 +195,7 @@ export default function MindMapList({
     <div className="min-h-screen">
       <Menu />
       {resolvedParams && (
-        <SecondaryNav user={resolvedParams.user} setName={resolvedParams.setName} />
+        <SecondaryNav setID={resolvedParams.setID}/>
       )}
 
       <div className="container mx-auto px-4 py-8">
@@ -362,9 +240,7 @@ export default function MindMapList({
                           className="flex-1 text-left"
                           onClick={() =>
                             router.push(
-                              `/${resolvedParams.user}/${resolvedParams.setName}/${encodeURIComponent(
-                                map.Title
-                              )}/mindmap`
+                              `/sets/${resolvedParams.setID}/mindmaps/${map.PublicID}`
                             )
                           }
                         >
@@ -416,6 +292,15 @@ export default function MindMapList({
                   {titleError && (
                     <p className="text-sm text-red-500 mt-1">{titleError}</p>
                   )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">Public?</span>
+                  <Switch
+                    checked={isPublic}
+                    onCheckedChange={setIsPublic}
+                    className="ml-2"
+                  />
+                  <span className="text-xs text-muted-foreground">{isPublic ? "Anyone can view this mind map" : "Only you can view this mind map"}</span>
                 </div>
                 <div className="flex justify-end">
                   <Button onClick={handleCreateMap}>Create</Button>
