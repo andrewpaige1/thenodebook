@@ -8,38 +8,32 @@ import SecondaryNav from "@/components/FlashcardNav";
 import { SetRepository } from '@/repositories/setRepository';
 import { FlashcardSet } from '@/types'; // Assuming Flashcard type is also in types
 import { fetchAccessToken } from '@/services/authService';
+import { useParams } from 'next/navigation'
 
-interface FlashcardExplorerProps {
-  params: Promise<{ user: string, setName: string, setID: string }>;
-}
-
-const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
+const MonochromeFlashcard = () => {
   const { user, isLoading: isUserLoading } = useUser();
   const [flashcardSet, setFlashcardSet] = useState<FlashcardSet | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [visibleSections, setVisibleSections] = useState<string[]>(['term']);
   const [isLoading, setIsLoading] = useState(true);
-  const [resolvedParams, setResolvedParams] = useState<{ user: string, setName: string, setID: string } | null>(null);
+  //const [resolvedParams, setResolvedParams] = useState<{ user: string, setName: string, setID: string } | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const params = useParams<{ setID: string }>()
+  const { setID } = params
+
   
   // --- STATE FOR CONCEPT FILTER ---
   const [selectedConcept, setSelectedConcept] = useState<string>('all');
 
   useEffect(() => {
-    params.then(resolved => {
-      setResolvedParams(resolved);
-    });
-  }, [params]);
-
-  useEffect(() => {
     async function fetchSet() {
-      if (resolvedParams && user) {
+      if (user) {
         try {
           setIsLoading(true);
           const repo = new SetRepository();
           const token = await fetchAccessToken();
-          const set = await repo.getByID(resolvedParams.setID, token);
+          const set = await repo.getByID(setID, token);
           
           if (!set.IsOwner) {
             setError('private');
@@ -55,10 +49,10 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
         }
       }
     }
-    if (resolvedParams && user) {
+    if (user) {
       fetchSet();
     }
-  }, [resolvedParams, user]);
+  }, [user, setID]);
 
   // --- DERIVE UNIQUE CONCEPTS AND FILTERED CARDS ---
   // Memoize to avoid re-calculating on every render
@@ -99,7 +93,7 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
     return (
       <div>
         <Menu />
-        {resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>}
+        <SecondaryNav setID={setID}/>
         <div className="min-h-[60vh] flex items-center justify-center bg-gray-50">
           <div className="text-center max-w-md mx-auto p-8">
             <Lock className="mx-auto h-16 w-16 text-gray-500 mb-4" />
@@ -160,7 +154,7 @@ const MonochromeFlashcard = ({ params }: FlashcardExplorerProps) => {
   return (
     <div>
       <Menu />
-      {resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>}
+      <SecondaryNav setID={setID}/>
       <div className="max-w-4xl mx-auto p-4">
         {/* Header */}
         <div className="border-b border-gray-200 pb-4 mb-6">

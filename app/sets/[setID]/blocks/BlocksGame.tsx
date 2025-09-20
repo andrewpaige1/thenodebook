@@ -74,7 +74,7 @@ const InstructionsModal = ({ onStart }: { onStart: () => void }) => {
 };
 
 export default function BlocksGame({ set }: { set: FlashcardSet }) {
-  const blocksRepo = new BlocksRepository();
+const blocksRepo = useMemo(() => new BlocksRepository(), []);  
   const { Flashcards: flashcards } = set;
 
   const concepts: Concept[] = useMemo(() => {

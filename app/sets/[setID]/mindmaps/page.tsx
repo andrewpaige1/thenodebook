@@ -44,13 +44,6 @@ interface MindMap {
   PublicID: string
 }
 
-interface Flashcard {
-  ID: number;
-  Term: string;
-  Solution: string;
-  Concept: string;
-}
-
 export default function MindMapList({
   params
 }: {
