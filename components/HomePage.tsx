@@ -9,9 +9,8 @@ import { Book } from "lucide-react";
 import Link from "next/link";
 import FlashcardSetActions from "./FlashcardSetActions";
 import { useUser } from "@auth0/nextjs-auth0";
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { FlashcardSet } from '@/types';
-import { FlashcardRepository } from '@/repositories/flashcardRepository';
 
 export default function UserFlashcardSets() {
   const { user, isLoading } = useUser();
@@ -40,8 +39,7 @@ export default function UserFlashcardSets() {
             set.Flashcards = flashcards;
         }*/
         setFlashcardSets(sets);
-      } catch (error) {
-       // console.error(error);
+      } catch {
         setFlashcardSets([]);
       } finally {
         setIsLoadingData(false);

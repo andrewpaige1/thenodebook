@@ -10,7 +10,7 @@ import { Plus, Book, Upload, FileText, Lightbulb, Tag, ArrowLeft, ArrowRight, Tr
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { v4 as uuidv4 } from 'uuid';
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import {
@@ -214,7 +214,7 @@ const SmartConceptInput = ({
               onClick={() => handleSelect(value.trim())}
             >
               <Plus className="h-4 w-4" />
-              <span>Create "{value.trim()}"</span>
+              <span>Create &quot;{value.trim()}&quot;</span>
             </div>
           )}
         </div>
@@ -312,7 +312,7 @@ const ConceptCombobox = ({
                     className="text-primary hover:!bg-primary/10"
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Create "{inputValue}"
+                    Create &quot;{inputValue}&quot;
                   </CommandItem>
               )}
             </CommandGroup>
@@ -436,7 +436,7 @@ const FlashCardCreator = () => {
   const [currentCard, setCurrentCard] = useState<Partial<FlashCard>>({});
   const [activeStep, setActiveStep] = useState(0);
   const [activeCard, setActiveCard] = useState<FlashCard | null>(null);
-  const [duplicateWarnings, setDuplicateWarnings] = useState<string[]>([]);
+  const [, setDuplicateWarnings] = useState<string[]>([]);
   const router = useRouter();
 
   // Drag-and-drop state for file upload
@@ -539,10 +539,9 @@ useEffect(() => {
       }
       setIsSubmitting(false);
       router.push(`/sets/${createdSet.PublicID}`);
-    } catch (err) {
+    } catch {
       setIsSubmitting(false);
       alert('Error saving set or flashcards.');
-     // console.error(err);
     }
   };
   
@@ -568,7 +567,7 @@ useEffect(() => {
       ]))];
       setConcepts(allConcepts);
       setUploadStatus('success');
-    } catch (err) {
+    } catch {
       setUploadStatus('error');
       return;
     }
@@ -700,7 +699,7 @@ useEffect(() => {
                             concepts={concepts}
                             placeholder={steps[activeStep].placeholder}
                             className="h-auto p-6 text-center text-2xl font-semibold tracking-tight placeholder:text-slate-400 placeholder:font-normal"
-                            onEnter={() => addCard()}
+                            onEnter={addCard}
                           />
                         ) : (
                           <Input value={currentManualValue} onChange={(e) => handleManualInputChange(e.target.value)} placeholder={steps[activeStep].placeholder} className="h-auto p-6 text-center text-2xl font-semibold tracking-tight placeholder:text-slate-400 placeholder:font-normal" onKeyPress={(e) => { if (e.key === 'Enter') { activeStep === steps.length - 1 ? addCard() : handleManualStepChange('next'); }}}/>

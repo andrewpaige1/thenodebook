@@ -40,7 +40,7 @@ export default function SecondaryNav({ setID }: { setID: string }) {
       <div className="container mx-auto px-2 md:px-4">
         <nav className="overflow-x-auto">
           <ul className="flex items-center justify-center gap-2 md:gap-4 py-3 w-full">
-            {navItems.map(({ label, icon: Icon, path, match }, idx) => {
+            {navItems.map(({ label, icon: Icon, path, match }) => {
               const href = setID ? path(setID) : '#';
               const isActive = typeof match === 'function' ? match(pathname, setID) : false;
               return (

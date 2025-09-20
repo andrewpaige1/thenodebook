@@ -13,8 +13,6 @@ import { fetchAccessToken } from '@/services/authService';
 
 // Types imported from '@/types'
 
-import { FlashcardRepository } from '@/repositories/flashcardRepository';
-
 const ProfileFlashcardSets = () => {
   const [sets, setSets] = useState<FlashcardSet[]>([]);
   const [isLoading, setIsLoading] = useState(true);

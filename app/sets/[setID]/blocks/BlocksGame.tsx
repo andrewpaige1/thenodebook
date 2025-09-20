@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { BlocksRepository } from '@/repositories/blocksRepository';
 import type { BlocksScore } from '@/types';
 import type { FlashcardSet } from '@/types';
-import { CheckCircle, PartyPopper, Clock, Trophy, Target, MousePointerClick, Crosshair, RefreshCw } from 'lucide-react';
+import { CheckCircle, Clock, Trophy, Target, MousePointerClick, Crosshair, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { fetchAccessToken } from '@/services/authService';
 
