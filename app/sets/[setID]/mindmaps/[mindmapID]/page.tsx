@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useEffect, useState, KeyboardEvent } from 'react';
+import { MindMapRepository } from '@/repositories/mindMapRepository';
 import {
   ReactFlow,
   MiniMap,
@@ -32,6 +33,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Menu from '@/components/Menu'
 import SecondaryNav from '@/components/FlashcardNav';
+import { fetchAccessToken } from '@/services/authService';
 
 const initialNodes: any = [];
 const initialEdges: any = [];
@@ -41,6 +43,30 @@ interface Flashcard {
   Term: string;
   Solution: string;
   Concept: string;
+}
+
+
+interface MindMapNodeLayout {
+  ID: number;
+  CreatedAt?: string;
+  UpdatedAt?: string;
+  DeletedAt?: string | null;
+  MindMapID: number;
+  FlashcardID: number;
+  XPosition: number;
+  YPosition: number;
+  Data: string;
+}
+
+interface MindMap {
+  ID: number;
+  Title: string;
+  PublicID: string;
+  SetID: string;
+  UserID: number;
+  IsPublic: boolean;
+  Connections: any[];
+  nodeLayouts?: MindMapNodeLayout[];
 }
 
 interface FlashcardSet {
@@ -64,7 +90,7 @@ export default function Page() {
     target: null,
     relationshipLabel: ''
   });
-  const params = useParams<{ user: string; setName: string; mindMapName: string }>();
+  const params = useParams<{ user: string; setName: string; mindmapID: string; setID: string }>();
 
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
@@ -78,74 +104,40 @@ export default function Page() {
   // Data fetching
   useEffect(() => {
     async function fetchSet() {
-      if (params.user) {
+      if (params.setID) {
         try {
-          // 1) Get mind map state
-          const mapStateResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/app/${params.user}/mindmap/state/${decodeURIComponent(params.mindMapName)}`,
-            {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            }
-          );
-
-          if (!mapStateResponse.ok) {
-            throw new Error('Failed to get state');
-          }
-
-          const mapData = await mapStateResponse.json();
-
-          // 2) Get flashcard set
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/app/users/${params.user}/sets/${decodeURIComponent(params.setName)}`,
-            {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch flashcard set');
-          }
-
-          const data = await response.json();
-          setFlashcardSet(data);
-          setMapID(mapData.id);
-
-          // 3) Create new nodes from server data
-          const newNodes = mapData.nodeLayouts.map((nodeLayout: any) => ({
-            id: nodeLayout.FlashcardID.toString(),
+          const token = await fetchAccessToken();
+          const repo = new MindMapRepository();
+          const mapData: MindMap = await repo.getByID(params.setID, params.mindmapID, token);
+          setMapID(mapData.ID);
+         // console.log(mapData)
+          const nodeLayouts = mapData.nodeLayouts || [];
+         //console.log('NodeLayouts from backend:', nodeLayouts);
+          const newNodes = nodeLayouts.map((nodeLayout: any) => ({
+            id: nodeLayout.FlashcardID?.toString() ?? '',
             position: {
               x: nodeLayout.XPosition,
               y: nodeLayout.YPosition
             },
-            data: { label: nodeLayout.Data }
+            data: { label: nodeLayout.Data ?? '' }
           }));
           setNodes(newNodes);
-
-          // 4) Create new edges from server data
-          const newEdges = mapData.connections.map((c: any) => ({
-            id: `${c.SourceID}-${c.TargetID}`,
-            source: c.SourceID.toString(),
-            target: c.TargetID.toString(),
-            label: c.Relationship || 'Related',
+          const connections = mapData.Connections || mapData.Connections || [];
+          const newEdges = connections.map((c: any) => ({
+            id: `${c.SourceID ?? c.sourceID}-${c.TargetID ?? c.targetID}`,
+            source: (c.SourceID ?? c.sourceID)?.toString() ?? '',
+            target: (c.TargetID ?? c.targetID)?.toString() ?? '',
+            label: c.Relationship ?? c.relationship ?? 'Related',
             type: 'step',
             style: { stroke: '#4a5568', strokeWidth: 2 }
           }));
           setEdges(newEdges);
-
         } catch (error) {
-          console.error('Error fetching flashcard set:', error);
+         // console.error('Error fetching mind map:', error);
+         return error
         }
       }
     }
-
     if (params) {
       fetchSet();
     }
@@ -190,26 +182,29 @@ export default function Page() {
         type: 'step',
         style: { stroke: '#4a5568', strokeWidth: 2 }
       };
-
-      const updateData = {
-        mindMapID: mapID,
-        nickname: params.user,
-        source: Number(connectionInfo.source),
-        target: Number(connectionInfo.target),
-        relationshipLabel: connectionInfo.relationshipLabel
-      };
-
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/updateConnections`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      setEdges((eds) => addEdge(newEdge, eds));
-      setIsDialogOpen(false);
+      // Save connection to backend
+      try {
+        const token = await fetchAccessToken();
+        const repo = new MindMapRepository();
+        // Prepare connections array for backend
+        const updatedConnections = [
+          {
+            SourceID: Number(connectionInfo.source),
+            TargetID: Number(connectionInfo.target),
+            Relationship: connectionInfo.relationshipLabel || 'Related',
+          }
+        ];
+        const success = await repo.updateConnections(params.setID, params.mindmapID, updatedConnections, token);
+        if (success) {
+          setEdges((eds) => addEdge(newEdge, eds));
+          setIsDialogOpen(false);
+        } else {
+          console.error('Failed to save connection to backend');
+        }
+      } catch (error) {
+        //console.error('Error saving connection:', error);
+        return error
+      }
     }
   };
 
@@ -221,48 +216,32 @@ export default function Page() {
 
   const handleSaveMap = useCallback(async () => {
     try {
-      // Build array of nodes with all required information
+      const token = await fetchAccessToken();
+      const repo = new MindMapRepository();
+      // Build array of node layouts for backend
       const nodeUpdates = nodes.map(node => ({
-        flashcardID: parseInt(node.id),
-        xPosition: node.position.x,
-        yPosition: node.position.y,
-        data: node.data.label // Include the node's label data
+        FlashcardID: parseInt(node.id),
+        XPosition: node.position.x,
+        YPosition: node.position.y,
+        Data: node.data.label
       }));
-  
-      const payload = {
-        mindMapID: mapID,
-        nickname: params.user,
-        nodes: nodeUpdates
-      };
-  
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/app/mindmap/updateNodeLayout`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-  
-      if (!res.ok) {
-        throw new Error('Error updating node layouts');
+    //  console.log('Saving nodeUpdates to backend:', nodeUpdates);
+      const success = await repo.updateLayouts(params.setID, params.mindmapID, nodeUpdates, token);
+      if (success) {
+        setHasChanges(false);
+      } else {
+        console.error('Failed to save node layouts to backend');
       }
-  
-      // If successful, reset the "hasChanges" state
-      setHasChanges(false);
-  
     } catch (error) {
-      console.error('Error saving node layouts:', error);
+     // console.error('Error saving node layouts:', error);
+     return error
     }
-  }, [nodes, mapID, params.user]);
+  }, [nodes, params.setID, params.mindmapID]);
 
   return (
     <>
       <Menu />
-      <SecondaryNav user={params.user} setName={params.setName} />
+      <SecondaryNav setID={params.setID}/>
       {!user && (
         <div className="max-w-4xl mx-auto p-4">
           <h2>Please login or sign up to use this feature</h2>

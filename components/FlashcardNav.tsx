@@ -1,61 +1,71 @@
 
-import Link from 'next/link'
-import { Book, Network, Pencil } from 'lucide-react'
+'use client';
+
+import Link from 'next/link';
+import { Book, Network, Pencil, Blocks } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
-export default function SecondaryNav({ 
-  user, 
-  setName 
-}: { 
-  user: string 
-  setName: string 
-}) {
-  const flashcardsPath = user ? `/${user}/${setName}` : '#'
-  const mindMapPath = user ? `/${user}/${setName}/mindmaps` : '#'
-  const quizPath = user ? `/${user}/${setName}/quiz` : '#'
+const navItems = [
+  {
+    label: 'Flashcards',
+    icon: Book,
+    path: (setID: string) => `/sets/${setID}`,
+    match: (pathname: string, setID: string) => pathname === `/sets/${setID}`,
+  },
+  {
+    label: 'Mind Maps',
+    icon: Network,
+    path: (setID: string) => `/sets/${setID}/mindmaps`,
+    match: (pathname: string) => pathname.includes('mindmaps'),
+  },
+  {
+    label: 'Quiz',
+    icon: Pencil,
+    path: (setID: string) => `/sets/${setID}/quiz`,
+    match: (pathname: string) => pathname.includes('quiz'),
+  },
+  {
+    label: 'Blocks',
+    icon: Blocks,
+    path: (setID: string) => `/sets/${setID}/blocks`,
+    match: (pathname: string) => pathname.includes('blocks'),
+  },
+];
+
+export default function SecondaryNav({ setID }: { setID: string }) {
   const pathname = usePathname();
 
   return (
-    <div className="border-b bg-white">
-      <div className="container mx-auto px-4">
-        <nav className="flex items-center justify-center">
-          <div className="flex items-center space-x-8">
-            <Link 
-              href={flashcardsPath}
-              className={`flex items-center space-x-2 py-3 border-b-2 transition-colors ${
-                !pathname.includes('mindmap') && !pathname.includes('quiz')
-                  ? 'border-blue-600 text-blue-600' 
-                  : 'border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-300'
-              }`}
-            >
-              <Book className="w-4 h-4" />
-              <span className="font-medium">Flashcards</span>
-            </Link>
-            <Link 
-              href={mindMapPath}
-              className={`flex items-center space-x-2 py-3 border-b-2 transition-colors ${
-                pathname.includes('mindmap') 
-                  ? 'border-blue-600 text-blue-600' 
-                  : 'border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-300'
-              }`}
-            >
-              <Network className="w-4 h-4" />
-              <span className="font-medium">Mind Maps</span>
-            </Link>
-            <Link 
-              href={quizPath}
-              className={`flex items-center space-x-2 py-3 border-b-2 transition-colors ${
-                pathname.includes('quiz') 
-                  ? 'border-blue-600 text-blue-600' 
-                  : 'border-transparent text-gray-600 hover:text-blue-600 hover:border-blue-300'
-              }`}
-            >
-              <Pencil className="w-4 h-4" />
-              <span className="font-medium">Quiz</span>
-            </Link>
-          </div>
+  <div className="border-b bg-white">
+      <div className="container mx-auto px-2 md:px-4">
+        <nav className="overflow-x-auto">
+          <ul className="flex items-center justify-center gap-2 md:gap-4 py-3 w-full">
+            {navItems.map(({ label, icon: Icon, path, match }, idx) => {
+              const href = setID ? path(setID) : '#';
+              const isActive = typeof match === 'function' ? match(pathname, setID) : false;
+              return (
+                <li key={label} className="relative">
+                  <Link
+                    href={href}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-150
+                      ${isActive
+                        ? 'bg-blue-200 text-blue-900 shadow-lg'
+                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-900'}
+                    `}
+                    aria-label={label}
+                  >
+                    <Icon className="w-6 h-6" />
+                    <span className="font-semibold text-base">{label}</span>
+                  </Link>
+                  {isActive && (
+                    <span className="absolute left-1/2 -bottom-1.5 -translate-x-1/2 w-2/3 h-1 bg-blue-300 rounded-full animate-pulse" />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </nav>
       </div>
     </div>
-  )
+  );
 }

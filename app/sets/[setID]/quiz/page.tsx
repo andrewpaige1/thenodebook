@@ -21,6 +21,9 @@ import { Input } from "@/components/ui/input";
 import Menu from "@/components/Menu";
 import SecondaryNav from "@/components/FlashcardNav";
 import { Progress } from "@/components/ui/progress";
+import { fetchAccessToken } from '@/services/authService';
+import { SetRepository } from '@/repositories/setRepository';
+import { FlashcardRepository } from '@/repositories/flashcardRepository';
 
 interface Flashcard {
   ID: number;
@@ -35,12 +38,15 @@ interface FlashcardSet {
   Flashcards: Flashcard[];
   IsPublic: boolean;
   UserID: number;
+  LastStudied?: string | null;
+  CreatedAt?: string;
+  IsOwner?: boolean;
 }
 
 export default function FlashcardStudy({ 
   params 
 }: { 
-  params: Promise<{ user: string, setName: string }> 
+  params: Promise<{ user: string, setName: string, setID: string}> 
 }) {
   const { user, isLoading: isUserLoading } = useUser();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +62,7 @@ export default function FlashcardStudy({
   const [showOverview, setShowOverview] = useState(false);
   const [studyMode, setStudyMode] = useState<'all' | 'struggling' | 'mastered'>('all');
   const [isLoading, setIsLoading] = useState(true);
-  const [resolvedParams, setResolvedParams] = useState<{ user: string, setName: string } | null>(null);
+  const [resolvedParams, setResolvedParams] = useState<{ user: string, setName: string, setID: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [savedProgress, setSavedProgress] = useState(false);
 
@@ -71,30 +77,22 @@ export default function FlashcardStudy({
       if (!resolvedParams) return;
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/app/users/${resolvedParams.user}/sets/${decodeURIComponent(resolvedParams.setName)}`,
-          {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          }
-        );
+       // const data = await response.json();
+        const token = await fetchAccessToken()
+        const setRepo = new SetRepository();
+       // const flashcardRepo = new FlashcardRepository()
+        const data = await setRepo.getByID(resolvedParams.setID, token)
+        //const flashcards = await flashcardRepo.getAll(resolvedParams.setID, token)
+        //data.Flashcards = flashcards
 
-        if (!response.ok) {
-          setError(response.status === 403 ? 'private' : 'general');
-          throw new Error('Failed to fetch flashcards');
-        }
-
-        const data = await response.json();
         
         // Check if private set is accessible
-        if (!data.IsPublic && (!user || user.nickname !== resolvedParams.user)) {
+
+        if (!data.IsPublic && !data.IsOwner) {
           setError('private');
           return;
         }
-
+        
         setFlashcardSet(data);
         
         // Load saved progress from localStorage
@@ -194,7 +192,7 @@ export default function FlashcardStudy({
     return (
       <div className="min-h-screen">
         <Menu />
-        {resolvedParams && <SecondaryNav user={resolvedParams.user} setName={resolvedParams.setName} />}
+        {resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>}
         <div className="min-h-[60vh] flex items-center justify-center">
           <Card className="w-96 p-6">
             {error === 'private' ? (
@@ -225,7 +223,7 @@ export default function FlashcardStudy({
   return (
     <div className="min-h-screen">
       <Menu />
-      {resolvedParams && <SecondaryNav user={resolvedParams.user} setName={resolvedParams.setName} />}
+      {resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>}
       
       <div className="container mx-auto px-4 py-8">
         {savedProgress && (

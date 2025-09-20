@@ -43,7 +43,7 @@ const Menu: React.FC = () => {
       
       <div className="flex items-center space-x-4">
         <Button asChild variant="outline">
-          <Link href="/create-set" className="flex items-center">
+          <Link href="/sets/new" className="flex items-center">
             <Plus className="mr-2 h-4 w-4" /> Create
           </Link>
         </Button>

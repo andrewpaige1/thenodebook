@@ -1,27 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { SetRepository } from '@/repositories/setRepository';
+import { fetchAccessToken } from '@/services/authService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Book } from "lucide-react";
 import Link from "next/link";
 import FlashcardSetActions from "./FlashcardSetActions";
 import { useUser } from "@auth0/nextjs-auth0";
-import { useRouter } from 'next/navigation';
-
-interface FlashcardSet {
-  ID: number;
-  Title: string;
-  IsPublic: boolean;
-  Flashcards: {
-    ID: number;
-    Term: string;
-    Solution: string;
-    Concept: string;
-  }[];
-  CreatedAt: string;
-  LastStudied: string | null;
-}
+import { redirect, useRouter } from 'next/navigation';
+import { FlashcardSet } from '@/types';
+import { FlashcardRepository } from '@/repositories/flashcardRepository';
 
 export default function UserFlashcardSets() {
   const { user, isLoading } = useUser();
@@ -32,7 +22,6 @@ export default function UserFlashcardSets() {
   useEffect(() => {
     // Redirect to login if not authenticated
     if (isLoading) return;   // Wait until done loading
-
     if (!user) {
       router.push('/auth/login');
       return;
@@ -41,28 +30,18 @@ export default function UserFlashcardSets() {
     // Fetch flashcard sets when user is authenticated
     const doAddAndFetch = async () => {
       try {
-        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/users`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nickname: user.nickname })
-        });
-        if (!resp.ok) {
-          throw new Error('Failed to add user');
-        }
-  
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/users/${user.nickname}/flashcard-sets`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch flashcard sets');
-        }
-        const data: FlashcardSet[] = await response.json();
-        setFlashcardSets(data);
+        const repo = new SetRepository();
+        const token = await fetchAccessToken();
+        const sets = await repo.getAll(user.nickname ?? '', token);
+      //  const flashcardRepo = new FlashcardRepository()
+
+        /*for (const set of sets) {
+            const flashcards = await flashcardRepo.getAll(set.PublicID, token)
+            set.Flashcards = flashcards;
+        }*/
+        setFlashcardSets(sets);
       } catch (error) {
-        console.error(error);
+       // console.error(error);
         setFlashcardSets([]);
       } finally {
         setIsLoadingData(false);
@@ -88,7 +67,7 @@ export default function UserFlashcardSets() {
         <Book className="mx-auto h-12 w-12 mb-4 opacity-50" />
         <p>You have not created any flashcard sets yet.</p>
         <Button className="mt-4" asChild>
-          <Link href="/create-set">Create First Set</Link>
+          <Link href="/sets/new">Create First Set</Link>
         </Button>
       </div>
     );
@@ -105,12 +84,13 @@ export default function UserFlashcardSets() {
                 <CardTitle>{set.Title}</CardTitle>
                 <FlashcardSetActions 
                 nickname={user?.nickname} 
-                setName={set.Title}         
+                setName={set.Title}       
+                setID={set.PublicID}  
                 onSetDeleted={() => {
                   setFlashcardSets(prevSets => prevSets.filter(s => s.ID !== set.ID));
                 }}/>
               </CardHeader>
-              <Link href={`/${user?.nickname}/${set.Title}`}>
+              <Link href={`/sets/${set.PublicID}`}>
               <CardContent className="p-4 pt-2">
                 <div className="text-sm text-muted-foreground mb-2">
                   {set.Flashcards.length} Cards

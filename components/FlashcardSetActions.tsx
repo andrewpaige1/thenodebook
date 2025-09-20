@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
 import { useRouter } from 'next/navigation';
+import { SetRepository } from '@/repositories/setRepository';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,45 +15,34 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { fetchAccessToken } from "@/services/authService";
 
 interface FlashcardSetActionsProps {
   nickname: string | null | undefined;
   setName: string;
+  setID: string
   onSetDeleted: () => void;
 }
 
-export default function FlashcardSetActions({ nickname, setName, onSetDeleted }: FlashcardSetActionsProps) {
+export default function FlashcardSetActions({ nickname, setName, onSetDeleted, setID }: FlashcardSetActionsProps) {
   const router = useRouter();
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    router.push(`/${nickname}/${setName}/updateSet`);
+    router.push(`/sets/${setID}/update`);
   };
 
   const handleDelete = async () => {
-    const requestData = {
-      nickname: nickname,
-      setName: setName
-    };
-
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/deleteSet`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        onSetDeleted(); // Call the callback to refresh the parent's data
-      } else {
-        console.error('Failed to delete set:', data);
-      }
+      const repo = new SetRepository();
+      // Use setName as the PublicID for deletion
+      // You may need to pass the user's token here if available in parent scope
+      const token = await fetchAccessToken();
+      await repo.delete(setID, token);
+      onSetDeleted();
     } catch (error) {
-      console.error('Error deleting set:', error);
+     // console.error('Error deleting set:', error);
+     return error
     }
   };
 
