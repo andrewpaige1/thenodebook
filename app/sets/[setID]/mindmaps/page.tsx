@@ -51,13 +51,6 @@ interface Flashcard {
   Concept: string;
 }
 
-interface FlashcardSet {
-  ID: number;
-  Title: string;
-  IsPublic: boolean;
-  Flashcards: Flashcard[];
-}
-
 export default function MindMapList({
   params
 }: {
@@ -145,7 +138,7 @@ export default function MindMapList({
       // After creation, update node layouts for the new mind map
       await repo.updateLayouts(setID, createdMap.PublicID, nodeLayouts, token);
       router.push(`/sets/${setID}/mindmaps/${createdMap.PublicID}`);
-    } catch (error) {
+    } catch {
      // console.error('Error creating mind map:', error);
       setTitleError('Failed to create mind map');
     }

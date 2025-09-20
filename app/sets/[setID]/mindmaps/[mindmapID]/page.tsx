@@ -38,14 +38,6 @@ import { fetchAccessToken } from '@/services/authService';
 const initialNodes: any = [];
 const initialEdges: any = [];
 
-interface Flashcard {
-  ID: number;
-  Term: string;
-  Solution: string;
-  Concept: string;
-}
-
-
 interface MindMapNodeLayout {
   ID: number;
   CreatedAt?: string;

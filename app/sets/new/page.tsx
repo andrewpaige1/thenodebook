@@ -712,7 +712,15 @@ useEffect(() => {
                             onEnter={addCard}
                           />
                         ) : (
-                          <Input value={currentManualValue} onChange={(e) => handleManualInputChange(e.target.value)} placeholder={steps[activeStep].placeholder} className="h-auto p-6 text-center text-2xl font-semibold tracking-tight placeholder:text-slate-400 placeholder:font-normal" onKeyPress={(e) => { if (e.key === 'Enter') { activeStep === steps.length - 1 ? addCard() : handleManualStepChange('next'); }}}/>
+                          <Input value={currentManualValue} onChange={(e) => handleManualInputChange(e.target.value)} placeholder={steps[activeStep].placeholder} className="h-auto p-6 text-center text-2xl font-semibold tracking-tight placeholder:text-slate-400 placeholder:font-normal" onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              if (activeStep === steps.length - 1) {
+                                addCard();
+                              } else {
+                                handleManualStepChange('next');
+                              }
+                            }
+                          }}/>
                         )}
                         <div className="flex justify-between">
                             <Button variant="outline" onClick={() => handleManualStepChange('prev')} disabled={activeStep === 0}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>
