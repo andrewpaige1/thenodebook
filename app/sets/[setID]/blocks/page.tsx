@@ -5,7 +5,7 @@ import Menu from "@/components/Menu"; // Assuming Menu is in @/components
 import SecondaryNav from "@/components/FlashcardNav"; // Assuming SecondaryNav is in @/components
 
 // Assuming these types are in @/types
-import type { FlashcardSet, Flashcard } from '@/types';
+import type { FlashcardSet } from '@/types';
 
 export default async function Page({ params }: { params: Promise<{ setID: string }> }) {
   const { setID } = await params;

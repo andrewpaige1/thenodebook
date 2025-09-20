@@ -46,7 +46,7 @@ interface Flashcard {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [originalSetName, setOriginalSetName] = useState('');
+  const [, setOriginalSetName] = useState('');
   const [deletedCardIds, setDeletedCardIds] = useState<string[]>([]);
   interface ErrorState {
     message: string | null;
@@ -94,7 +94,12 @@ interface Flashcard {
       }));
         
         setCards(transformedCards);
-      } catch (error) {
+      } catch(error) {
+        setUpdateError(
+          typeof error === "object" && error !== null && "message" in error
+            ? String((error as { message?: unknown }).message)
+            : "An error occurred"
+        )
         //console.log(error)
        // return error
       } finally {

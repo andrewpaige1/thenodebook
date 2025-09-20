@@ -22,6 +22,7 @@ export default async function Index() {
         <LandingPage />
         {accessTokenError && accessTokenError.name === 'AccessTokenError' && (
           <div className="bg-red-100 text-red-700 p-4 rounded mt-4 text-center">
+            {/* eslint-disable @next/next/no-html-link-for-pages */}
             Your session has expired. Please <a href="/api/auth/login" className="underline font-semibold">log in again</a>.
           </div>
         )}

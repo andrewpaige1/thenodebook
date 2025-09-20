@@ -69,16 +69,11 @@ interface MindMap {
   nodeLayouts?: MindMapNodeLayout[];
 }
 
-interface FlashcardSet {
-  Title: string;
-  Flashcards: Flashcard[];
-}
 
 export default function Page() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [mapID, setMapID] = useState(0);
-  const [, setFlashcardSet] = useState<FlashcardSet | null>(null);
+  const [, setMapID] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false); // NEW: Track if a node has moved
   const [connectionInfo, setConnectionInfo] = useState<{

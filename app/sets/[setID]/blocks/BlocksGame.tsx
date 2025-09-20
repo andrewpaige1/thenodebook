@@ -177,7 +177,8 @@ export default function BlocksGame({ set }: { set: FlashcardSet }) {
             Time: timeElapsed,
           };
           await blocksRepo.createScore(set.PublicID, scoreData, token);
-        } catch (err) {
+        } catch {
+          alert("Failed to submit score")
         } finally {
           setIsSubmittingScore(false);
         }
@@ -185,7 +186,7 @@ export default function BlocksGame({ set }: { set: FlashcardSet }) {
           const token = await fetchAccessToken();
           const leaderboardData = await blocksRepo.getLeaderboard(set.PublicID, token);
           setLeaderboard(Array.isArray(leaderboardData) ? leaderboardData : leaderboardData ? [leaderboardData] : []);
-        } catch (err) {
+        } catch {
           setLeaderboard([]);
         }
       };

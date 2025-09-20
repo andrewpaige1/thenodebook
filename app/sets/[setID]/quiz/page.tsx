@@ -23,7 +23,6 @@ import SecondaryNav from "@/components/FlashcardNav";
 import { Progress } from "@/components/ui/progress";
 import { fetchAccessToken } from '@/services/authService';
 import { SetRepository } from '@/repositories/setRepository';
-import { FlashcardRepository } from '@/repositories/flashcardRepository';
 
 interface Flashcard {
   ID: number;
