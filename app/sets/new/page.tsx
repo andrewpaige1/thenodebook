@@ -361,7 +361,12 @@ const EditableConceptField = ({
 
 
 // --- Draggable Card Item Component ---
-const SortableCardItem = ({ card, updateCardField, removeCard, allConcepts }: { card: FlashCard; updateCardField: Function; removeCard: Function; allConcepts: string[] }) => {
+const SortableCardItem = ({ card, updateCardField, removeCard, allConcepts }: {
+  card: FlashCard;
+  updateCardField: (cardId: string, field: keyof FlashCard, value: string) => void;
+  removeCard: (id: string) => void;
+  allConcepts: string[];
+}) => {
   const {
     attributes,
     listeners,
@@ -400,7 +405,13 @@ const SortableCardItem = ({ card, updateCardField, removeCard, allConcepts }: { 
 };
 
 // --- Concept Column Component ---
-const ConceptColumn = ({ concept, cards, updateCardField, removeCard, allConcepts }: { concept: string, cards: FlashCard[], updateCardField: Function, removeCard: Function, allConcepts: string[] }) => {
+const ConceptColumn = ({ concept, cards, updateCardField, removeCard, allConcepts }: {
+  concept: string;
+  cards: FlashCard[];
+  updateCardField: (cardId: string, field: keyof FlashCard, value: string) => void;
+  removeCard: (id: string) => void;
+  allConcepts: string[];
+}) => {
   const { setNodeRef } = useSortable({ id: `column-${concept}`, data: { type: "column", concept } });
   
   return (

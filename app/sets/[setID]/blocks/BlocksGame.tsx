@@ -213,7 +213,7 @@ export default function BlocksGame({ set }: { set: FlashcardSet }) {
               Set Complete
             </h2>
             <p className="mt-2 text-lg text-slate-500">
-              Congratulations! Here's your performance summary.
+              Congratulations! Here is your performance summary.
             </p>
           </div>
 

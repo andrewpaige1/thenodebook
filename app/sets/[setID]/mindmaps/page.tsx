@@ -103,8 +103,8 @@ export default function MindMapList({
         setMindMaps(data);
       } catch (error) {
         //console.error('Error:', error);
-        return error
         setError('Failed to load mind maps');
+        return error
       } finally {
         setIsLoading(false);
       }
