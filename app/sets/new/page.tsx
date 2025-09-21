@@ -560,7 +560,8 @@ useEffect(() => {
     setUploadStatus('uploading');
     const uploadRepo = new UploadFlashcardRepository();
     try {
-      const result = await uploadRepo.upload(selectedFile);
+      const token = await fetchAccessToken()
+      const result = await uploadRepo.upload(selectedFile, token);
       if (!result || !result.cards) throw new Error('Upload failed');
       // Map API response to local FlashCard type
       const newCards = result.cards.map(card => ({
@@ -758,8 +759,16 @@ useEffect(() => {
                     <Upload className="mr-2 h-4 w-4" />
                     {selectedFile ? `Selected: ${selectedFile.name}` : 'Choose File'}
                   </Button>
-                  <Button onClick={handleFileUpload} disabled={!selectedFile || uploadStatus !== 'idle'} className="w-full">
-                    {uploadStatus === 'uploading' || uploadStatus === 'processing' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                  <Button
+                    onClick={handleFileUpload}
+                    disabled={!selectedFile || uploadStatus === 'uploading' || uploadStatus === 'processing' || uploadStatus === 'success'}
+                    className="w-full"
+                  >
+                    {uploadStatus === 'uploading' || uploadStatus === 'processing' ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="mr-2 h-4 w-4" />
+                    )}
                     Create Cards
                   </Button>
                   {uploadStatus !== 'idle' && (

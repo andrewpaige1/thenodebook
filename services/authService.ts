@@ -1,7 +1,7 @@
 export async function fetchAccessToken(): Promise<string> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL!;
+  //const baseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL!;
   try {
-    const res = await fetch(`${baseUrl}/api/auth/token/`, {
+    const res = await fetch(`/api/auth/token/`, {
       method: "GET"
     });
     if (!res.ok) {
@@ -12,6 +12,7 @@ export async function fetchAccessToken(): Promise<string> {
       return `${JSON.stringify(errorText)}`
     }
     const data = await res.json();
+    console.log(data)
     if (!data.accessToken) {
      // console.error('No accessToken in response:', data);
       //throw new Error('No accessToken in response');
