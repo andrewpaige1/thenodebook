@@ -350,6 +350,7 @@ const FlashCardCreator = () => {
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState('');
+  const [textUploadStatus, setTextUploadStatus] = useState(false)
   const [currentCard, setCurrentCard] = useState<Partial<FlashCard>>({});
   const [activeStep, setActiveStep] = useState(0);
   const [activeCard, setActiveCard] = useState<FlashCard | null>(null);
@@ -459,15 +460,36 @@ const FlashCardCreator = () => {
     }
   };
   
-  const handlePasteConvert = () => { 
-    const lines = pasteText.split('\n').filter(line => line.trim() !== '');
+  const handlePasteConvert = async () => { 
+
+
+
+
+    /*const lines = pasteText.split('\n').filter(line => line.trim() !== '');
     const newCards: FlashCard[] = lines.map(line => {
       const parts = line.split(',');
       return { id: uuidv4(), term: parts[0]?.trim() || '', solution: parts[1]?.trim() || '', concept: 'Pasted' };
     }).filter(card => card.term);
     setCards(prev => [...newCards, ...prev]);
     if (!concepts.includes('Pasted')) setConcepts(prev => [...prev, 'Pasted']);
-    setPasteText('');
+    setPasteText('');*/
+
+    const uploadRepo = new UploadFlashcardRepository();
+    try {
+      setTextUploadStatus(!textUploadStatus)
+      const token = await fetchAccessToken();
+      const result = await uploadRepo.uploadText(pasteText, token);
+      if (!result || !result.cards) throw new Error('Upload failed');
+      const newCards = result.cards.map(card => ({ id: uuidv4(), term: card.term, solution: card.solution, concept: card.concept || '' }));
+      setCards(prev => [...newCards, ...prev]);
+      setTextUploadStatus(false);
+    } catch {
+      setUploadStatus('error');
+    } finally {
+      setPasteText('');
+      setTimeout(() => setUploadStatus('idle'), 3000);
+    }
+
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -609,9 +631,12 @@ const FlashCardCreator = () => {
 
               <TabsContent value="paste" className="pt-6">
                 <div className="space-y-4">
-                  <p className="text-center text-sm text-muted-foreground mb-2">Paste your text below. Separate terms from solutions with a comma. Put each flashcard on a new line.</p>
-                  <Textarea value={pasteText} onChange={e => setPasteText(e.target.value)} placeholder={"Term 1, Solution 1\nTerm 2, Solution 2..."} className="min-h-[180px] font-mono" />
-                  <Button onClick={handlePasteConvert} disabled={!pasteText.trim()} className="w-full"><FileText className="mr-2 h-4 w-4" /> Convert Text to Cards</Button>
+                  <p className="text-center text-sm text-muted-foreground mb-2">Paste your text below. Our extractor will create terms, defintions, and concepts for you.</p>
+                  <Textarea value={pasteText} onChange={e => setPasteText(e.target.value)} placeholder={"Paste your text here!"} className="min-h-[180px] font-mono" />
+                  <Button onClick={handlePasteConvert} disabled={!pasteText.trim()} className="w-full"><FileText className="mr-2 h-4 w-4" /> 
+                  {!textUploadStatus && "Convert Text to Cards"}
+                  {textUploadStatus && <Loader2 className="mr-2 h-4 w-4 animate-spin" />  }
+                  </Button>
                 </div>
               </TabsContent>
             </Tabs>

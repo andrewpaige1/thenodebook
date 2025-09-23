@@ -19,3 +19,22 @@ export async function uploadFlashcardFile(file: File, token: string): Promise<{ 
     return null;
   }
 }
+
+export async function uploadFlashcardText(text: string, token: string): Promise<{ cards: FlashcardResponse[] } | null> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/api/flashcards/upload/text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ text }),
+    });
+    if (!response.ok) throw new Error('Failed to upload text');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    //console.error(error);
+    return null;
+  }
+}
