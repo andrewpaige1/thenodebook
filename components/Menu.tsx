@@ -1,7 +1,5 @@
-'use client';
-
 import React from 'react';
-import { useUser } from '@auth0/nextjs-auth0';
+import { auth0 } from '../lib/auth0';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -15,28 +13,41 @@ import {
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
-const Menu: React.FC = () => {
-  const { user, isLoading } = useUser();
+const Menu: React.FC = async () => {
+  const session = await auth0.getSession();
+  const user = session?.user;
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-end p-4">
-        <Button variant="outline" disabled>Loading...</Button>
-      </div>
-    );
-  }
-
+  // If there's no user, show the login button.
   if (!user) {
     return (
+      <>
       <div className="flex items-center justify-end p-4">
         <Button asChild>
-          {/* eslint-disable @next/next/no-html-link-for-pages */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/auth/login">Login</a>
         </Button>
       </div>
+      </>
     );
   }
 
+  // If a user session exists, try to get the access token.
+  try {
+    await auth0.getAccessToken();
+  } catch (error) {
+    // This can happen if the session is expired or invalid.
+    // In this case, we'll show the login button as a fallback.
+    return (
+      <div className="flex items-center justify-between p-4">
+      <Button asChild>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a href="/auth/login">Login</a>
+      </Button>
+      </div>
+    );
+  }
+
+  // If we have a user and could get a token, show the full menu.
   return (
     <div className="flex items-center justify-between p-4">
       <Link href="/" className="text-2xl font-bold">Mindthred</Link>
@@ -68,7 +79,7 @@ const Menu: React.FC = () => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-            {/* eslint-disable @next/next/no-html-link-for-pages */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/auth/logout">Logout</a>
             </DropdownMenuItem>
           </DropdownMenuContent>

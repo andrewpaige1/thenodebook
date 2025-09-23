@@ -17,7 +17,6 @@ export default async function Index() {
   if (!session || !token || (accessTokenError && accessTokenError.name === 'AccessTokenError')) {
     return (
       <>
-        {/*<Menu />*/}
         <LandingPage />
         {accessTokenError && accessTokenError.name === 'AccessTokenError' && (
           <div className="bg-red-100 text-red-700 p-4 rounded mt-4 text-center">
