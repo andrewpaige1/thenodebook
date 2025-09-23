@@ -18,7 +18,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Menu from "@/components/Menu";
 import { Progress } from "@/components/ui/progress";
 import { fetchAccessToken } from '@/services/authService';
 import { SetRepository } from '@/repositories/setRepository';
@@ -189,8 +188,6 @@ export default function FlashcardStudy({
   if (error || !flashcardSet) {
     return (
       <div className="min-h-screen">
-        <Menu />
-        {/*resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>*/}
         <div className="min-h-[60vh] flex items-center justify-center">
           <Card className="w-96 p-6">
             {error === 'private' ? (
@@ -220,7 +217,6 @@ export default function FlashcardStudy({
 
   return (
     <div className="min-h-screen">
-      <Menu />
       {/*resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>*/}
       
       <div className="container mx-auto px-4 py-8">
