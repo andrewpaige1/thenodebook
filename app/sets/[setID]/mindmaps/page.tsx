@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { fetchAccessToken } from '@/services/authService';
 import { FlashcardRepository } from '@/repositories/flashcardRepository';
+import Link from "next/link";
+import { useParams } from 'next/navigation'
 
 interface MindMap {
   ID: number;
@@ -42,11 +44,7 @@ interface MindMap {
   PublicID: string
 }
 
-export default function MindMapList({
-  params
-}: {
-  params: Promise<{ user: string; setName: string; setID: string }>
-}) {
+export default function MindMapList() {
   const router = useRouter();
   const { isLoading: isUserLoading } = useUser();
   const [mindMaps, setMindMaps] = useState<MindMap[]>([]);
@@ -66,23 +64,24 @@ export default function MindMapList({
   const [titleError, setTitleError] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
 
-  const [resolvedParams, setResolvedParams] = useState<{ user: string; setName: string; setID: string} | null>(null);
+  //const [resolvedParams, setResolvedParams] = useState<{ user: string; setName: string; setID: string} | null>(null);
+  const { setID } = useParams<{ setID: string }>()
 
   // Resolve params from the promise
-  useEffect(() => {
+/*  useEffect(() => {
     params.then(setResolvedParams);
-  }, [params]);
+  }, [params]);*/
 
   // Fetch existing mind maps
   useEffect(() => {
     async function fetchMindMaps() {
-      if (!resolvedParams) return;
+     // if (!resolvedParams) return;
       setIsLoading(true);
       try {
         const token = await fetchAccessToken();
         const repo = new MindMapRepository();
         // setID from resolvedParams is a string, convert to number
-  const setID = resolvedParams.setID;
+ // const setID = resolvedParams.setID;
   const data = await repo.getAllForSet(setID, token);
         setMindMaps(data);
       } catch (error) {
@@ -94,16 +93,16 @@ export default function MindMapList({
       }
     }
     fetchMindMaps();
-  }, [resolvedParams]);
+  }, [setID]);
 
   const handleCreateMap = async () => {
-    if (!resolvedParams) return;
+   // if (!resolvedParams) return;
     if (!newMapTitle.trim()) return;
     setTitleError(null);
     try {
       const token = await getAccessToken();
       const repo = new MindMapRepository();
-      const setID = resolvedParams.setID;
+     // const setID = resolvedParams.setID;
       const flashcardRepo = new FlashcardRepository()
       // Assume you have access to the flashcards for this set
       // If not, you may need to fetch them before creating the mind map
@@ -137,12 +136,12 @@ export default function MindMapList({
 
   // Handle mind map deletion
   const handleDeleteMap = async (mindMap: MindMap) => {
-    if (!resolvedParams) return;
+   // if (!resolvedParams) return;
     setDeleteError(null);
     try {
       const token = await fetchAccessToken();
       const repo = new MindMapRepository();
-  const setID = resolvedParams.setID;
+  //const setID = resolvedParams.setID;
   await repo.delete(setID, mindMap.PublicID, token);
       setMindMaps(mindMaps.filter(map => map.ID !== mindMap.ID));
       setShowDeleteDialog(false);
@@ -224,43 +223,37 @@ export default function MindMapList({
             </div>
           ) : (
             <div className="grid gap-4">
-              {mindMaps.map((map) => (
+              {mindMaps.map((mindmap) => (
                 <Card
-                  key={map.ID}
+                  key={mindmap.ID}
                   className="hover:shadow-lg transition-shadow"
                 >
-                  {resolvedParams && (
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
-                        <button
-                          className="flex-1 text-left"
-                          onClick={() =>
-                            router.push(
-                              `/sets/${resolvedParams.setID}/mindmaps/${map.PublicID}`
-                            )
-                          }
+                        <Link
+                          href={`/sets/${setID}/mindmaps/${mindmap.PublicID}`}
+                          className="flex-1 text-left no-underline"
                         >
                           <div className="flex items-center gap-3">
                             <Network className="h-5 w-5 text-blue-500" />
                             <h3 className="font-semibold text-gray-900">
-                              {map.Title}
+                              {mindmap.Title}
                             </h3>
                           </div>
-                        </button>
+                        </Link>
                         <button
                           onClick={() => {
-                            setMindMapToDelete(map);
+                            setMindMapToDelete(mindmap);
                             setDeleteError(null);
                             setShowDeleteDialog(true);
                           }}
                           className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                          aria-label={`Delete mind map ${map.Title}`}
+                          aria-label={`Delete mind map ${mindmap.Title}`}
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
                       </div>
                     </CardContent>
-                  )}
                 </Card>
               ))}
             </div>
