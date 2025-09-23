@@ -1,7 +1,6 @@
 import { auth0 } from '../lib/auth0';
 import LandingPage from '../components/LandingPage';
 import HomePage from '../components/HomePage';
-import Menu from '../components/Menu';
 
 export default async function Index() {
   const session = await auth0.getSession();
