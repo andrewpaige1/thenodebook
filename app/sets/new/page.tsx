@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Book, Upload, FileText, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Send, Globe2, Lock, CloudUpload, GripVertical, Loader2, AlertCircle, CheckCircle, ChevronsUpDown } from 'lucide-react';
+import { Plus, Book, Upload, FileText, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Send, Globe2, Lock, CloudUpload, GripVertical, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { v4 as uuidv4 } from 'uuid';
