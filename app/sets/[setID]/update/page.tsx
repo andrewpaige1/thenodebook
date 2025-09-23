@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Book, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Edit2, Check, X, Send, Globe2, Lock } from 'lucide-react';
 import { useUser } from '@auth0/nextjs-auth0';
 import { redirect, useRouter } from "next/navigation";
-import Menu from '@/components/Menu';
 import { Switch } from "@/components/ui/switch";
 import { useParams } from 'next/navigation'
 import ErrorAlert from '@/components/ErrorAlert';
@@ -281,7 +280,6 @@ interface Flashcard {
 
   return (
     <div>
-      <Menu />
       <div className="max-w-4xl mx-auto p-6 space-y-8">
         {/* Set Name Input and Privacy Toggle */}
         {updateError && (

@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, BookOpen, XCircle, Lock } from 'lucide-react';
 import { useUser } from "@auth0/nextjs-auth0";
-import Menu from "@/components/Menu";
 import { SetRepository } from '@/repositories/setRepository';
 import { FlashcardSet } from '@/types'; // Assuming Flashcard type is also in types
 import { fetchAccessToken } from '@/services/authService';
@@ -91,7 +90,6 @@ const MonochromeFlashcard = () => {
   if (error === 'private') {
     return (
       <div>
-        <Menu />
        {/*<SecondaryNav setID={setID}/>*/}
         <div className="min-h-[60vh] flex items-center justify-center bg-gray-50">
           <div className="text-center max-w-md mx-auto p-8">
@@ -152,7 +150,6 @@ const MonochromeFlashcard = () => {
 
   return (
     <div>
-      <Menu />
       {/*<SecondaryNav setID={setID}/>*/}
       <div className="max-w-4xl mx-auto p-4">
         {/* Header */}
