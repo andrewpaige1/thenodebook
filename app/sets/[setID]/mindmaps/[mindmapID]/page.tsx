@@ -1,3 +1,4 @@
+// Example path: app/sets/[setID]/mindmaps/[mindmapID]/page.tsx
 "use client"
 
 import React, { useCallback, useEffect, useState, KeyboardEvent } from 'react';
@@ -65,7 +66,7 @@ export default function Page() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [, setMapID] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false); // NEW: Track if a node has moved
+  const [hasChanges, setHasChanges] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState<{
     source: string | null,
     target: string | null,
@@ -95,9 +96,8 @@ export default function Page() {
           const repo = new MindMapRepository();
           const mapData: MindMap = await repo.getByID(params.setID, params.mindmapID, token);
           setMapID(mapData.ID);
-         // console.log(mapData)
+
           const nodeLayouts = mapData.nodeLayouts || [];
-         //console.log('NodeLayouts from backend:', nodeLayouts);
           const newNodes = nodeLayouts.map((nodeLayout: any) => ({
             id: nodeLayout.FlashcardID?.toString() ?? '',
             position: {
@@ -107,7 +107,8 @@ export default function Page() {
             data: { label: nodeLayout.Data ?? '' }
           }));
           setNodes(newNodes);
-          const connections = mapData.Connections || mapData.Connections || [];
+
+          const connections = mapData.Connections || [];
           const newEdges = connections.map((c: any) => ({
             id: `${c.SourceID ?? c.sourceID}-${c.TargetID ?? c.targetID}`,
             source: (c.SourceID ?? c.sourceID)?.toString() ?? '',
@@ -118,7 +119,7 @@ export default function Page() {
           }));
           setEdges(newEdges);
         } catch (error) {
-         // console.error('Error fetching mind map:', error);
+         console.error('Error fetching mind map:', error);
          return error
         }
       }
@@ -128,13 +129,10 @@ export default function Page() {
     }
   }, [params, setNodes, setEdges]);
 
-  // Custom handler for node changes so we can detect position changes
+  // Custom handler for node changes to detect position changes
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      // first, call the default handler from useNodesState
       onNodesChange(changes);
-
-      // if any node was moved, set hasChanges to true
       const moved = changes.some(change => change.type === 'position');
       if (moved) {
         setHasChanges(true);
@@ -156,7 +154,7 @@ export default function Page() {
     []
   );
 
-  // Save button for edges
+  // Handles saving a new relationship (edge)
   const handleSaveRelationship = async () => {
     if (connectionInfo.source && connectionInfo.target) {
       const newEdge: Edge = {
@@ -167,11 +165,10 @@ export default function Page() {
         type: 'step',
         style: { stroke: '#4a5568', strokeWidth: 2 }
       };
-      // Save connection to backend
+
       try {
         const token = await fetchAccessToken();
         const repo = new MindMapRepository();
-        // Prepare connections array for backend
         const updatedConnections = [
           {
             SourceID: Number(connectionInfo.source),
@@ -187,7 +184,7 @@ export default function Page() {
           console.error('Failed to save connection to backend');
         }
       } catch (error) {
-        //console.error('Error saving connection:', error);
+        console.error('Error saving connection:', error);
         return error
       }
     }
@@ -199,18 +196,17 @@ export default function Page() {
     }
   };
 
+  // Handles saving the node positions (layout)
   const handleSaveMap = useCallback(async () => {
     try {
       const token = await fetchAccessToken();
       const repo = new MindMapRepository();
-      // Build array of node layouts for backend
       const nodeUpdates = nodes.map(node => ({
         FlashcardID: parseInt(node.id),
         XPosition: node.position.x,
         YPosition: node.position.y,
         Data: node.data.label
       }));
-    //  console.log('Saving nodeUpdates to backend:', nodeUpdates);
       const success = await repo.updateLayouts(params.setID, params.mindmapID, nodeUpdates, token);
       if (success) {
         setHasChanges(false);
@@ -218,22 +214,25 @@ export default function Page() {
         console.error('Failed to save node layouts to backend');
       }
     } catch (error) {
-     // console.error('Error saving node layouts:', error);
+     console.error('Error saving node layouts:', error);
      return error
     }
   }, [nodes, params.setID, params.mindmapID]);
 
   return (
     <>
-      {/*<SecondaryNav setID={params.setID}/>*/}
       {!user && (
         <div className="max-w-4xl mx-auto p-4">
           <h2>Please login or sign up to use this feature</h2>
         </div>
       )}
+
       {user && (
-        <div style={{ width: '100vw', height: 'calc(100vh - 64px)', position: 'relative' }}>
-          {/* The Save button in top-right corner of the mind map */}
+        // This container fills the flex-grow space provided by layout.tsx.
+        // `position: relative` is crucial for anchoring the "Save" button.
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          
+          {/* This button is positioned in the top-right of its relative parent */}
           <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 4 }}>
             <Button onClick={handleSaveMap} disabled={!hasChanges}>
               Save

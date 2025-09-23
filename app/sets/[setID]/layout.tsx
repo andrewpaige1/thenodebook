@@ -9,14 +9,18 @@ export default async function SetLayout({
   children: React.ReactNode;
   params: Promise<{ setID: string }>;
 }) {
-  const { setID }= await params 
+  const { setID } = await params;
   return (
-    <div>
-      {/* The navigation is now part of the persistent layout */}
+    // This div becomes a flex container that stacks its children vertically.
+    // It assumes a 64px primary header is above it.
+    <div className="flex flex-col h-[calc(100vh-64px)]">
+      
+      {/* The navigation takes its natural height */}
       <SecondaryNav setID={setID} />
 
-      {/* The page content will be rendered here */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      {/* The main content area now grows to fill all remaining space. */}
+      {/* We remove the padding and container classes from here. */}
+      <main className="flex-grow">
         {children}
       </main>
     </div>
