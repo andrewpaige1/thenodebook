@@ -32,7 +32,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Menu from '@/components/Menu'
-import SecondaryNav from '@/components/FlashcardNav';
 import { fetchAccessToken } from '@/services/authService';
 
 const initialNodes: any = [];

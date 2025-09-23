@@ -2,7 +2,6 @@ import { SetRepository } from "@/repositories/setRepository";
 import { auth0 } from "@/lib/auth0";
 import BlocksGame from "./BlocksGame";
 import Menu from "@/components/Menu"; // Assuming Menu is in @/components
-import SecondaryNav from "@/components/FlashcardNav"; // Assuming SecondaryNav is in @/components
 
 // Assuming these types are in @/types
 import type { FlashcardSet } from '@/types';

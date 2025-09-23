@@ -34,7 +34,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Menu from "@/components/Menu";
-import SecondaryNav from "@/components/FlashcardNav";
 import { fetchAccessToken } from '@/services/authService';
 import { FlashcardRepository } from '@/repositories/flashcardRepository';
 

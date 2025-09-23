@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, BookOpen, XCircle, Lock } from 'lucide-react';
 import { useUser } from "@auth0/nextjs-auth0";
 import Menu from "@/components/Menu";
-import SecondaryNav from "@/components/FlashcardNav";
 import { SetRepository } from '@/repositories/setRepository';
 import { FlashcardSet } from '@/types'; // Assuming Flashcard type is also in types
 import { fetchAccessToken } from '@/services/authService';
