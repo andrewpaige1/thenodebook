@@ -93,7 +93,7 @@ const MonochromeFlashcard = () => {
     return (
       <div>
         <Menu />
-        <SecondaryNav setID={setID}/>
+       {/*<SecondaryNav setID={setID}/>*/}
         <div className="min-h-[60vh] flex items-center justify-center bg-gray-50">
           <div className="text-center max-w-md mx-auto p-8">
             <Lock className="mx-auto h-16 w-16 text-gray-500 mb-4" />
@@ -154,7 +154,7 @@ const MonochromeFlashcard = () => {
   return (
     <div>
       <Menu />
-      <SecondaryNav setID={setID}/>
+      {/*<SecondaryNav setID={setID}/>*/}
       <div className="max-w-4xl mx-auto p-4">
         {/* Header */}
         <div className="border-b border-gray-200 pb-4 mb-6">

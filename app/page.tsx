@@ -18,7 +18,7 @@ export default async function Index() {
   if (!session || !token || (accessTokenError && accessTokenError.name === 'AccessTokenError')) {
     return (
       <>
-        <Menu />
+        {/*<Menu />*/}
         <LandingPage />
         {accessTokenError && accessTokenError.name === 'AccessTokenError' && (
           <div className="bg-red-100 text-red-700 p-4 rounded mt-4 text-center">
@@ -33,7 +33,7 @@ export default async function Index() {
   // If user is authenticated, show their flashcard sets
   return (
     <>
-      <Menu />
+     {/* <Menu />*/}
       <HomePage />
     </>
   );

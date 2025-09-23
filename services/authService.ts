@@ -12,7 +12,6 @@ export async function fetchAccessToken(): Promise<string> {
       return `${JSON.stringify(errorText)}`
     }
     const data = await res.json();
-    console.log(data)
     if (!data.accessToken) {
      // console.error('No accessToken in response:', data);
       //throw new Error('No accessToken in response');

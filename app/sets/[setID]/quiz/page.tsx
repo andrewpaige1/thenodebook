@@ -191,7 +191,7 @@ export default function FlashcardStudy({
     return (
       <div className="min-h-screen">
         <Menu />
-        {resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>}
+        {/*resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>*/}
         <div className="min-h-[60vh] flex items-center justify-center">
           <Card className="w-96 p-6">
             {error === 'private' ? (
@@ -222,7 +222,7 @@ export default function FlashcardStudy({
   return (
     <div className="min-h-screen">
       <Menu />
-      {resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>}
+      {/*resolvedParams && <SecondaryNav setID={resolvedParams.setID}/>*/}
       
       <div className="container mx-auto px-4 py-8">
         {savedProgress && (

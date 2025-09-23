@@ -176,9 +176,9 @@ export default function MindMapList({
     return (
       <div className="min-h-screen">
         <Menu />
-        {resolvedParams && (
+        {/*resolvedParams && (
           <SecondaryNav setID={resolvedParams.setID}/>
-        )}
+        )*/}
         <div className="min-h-[60vh] flex items-center justify-center">
           <Card className="w-96 p-6">
             <XCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
@@ -194,9 +194,9 @@ export default function MindMapList({
   return (
     <div className="min-h-screen">
       <Menu />
-      {resolvedParams && (
+      {/*resolvedParams && (
         <SecondaryNav setID={resolvedParams.setID}/>
-      )}
+      )*/}
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">

@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: Promise<{ setID: string
   return (
     <div>
       <Menu />
-      <SecondaryNav setID={setID} />
+      {/*<SecondaryNav setID={setID} />*/}
       
       <main className="container mx-auto px-4 py-8">
         {/* The BlocksGame component is now wrapped in the main layout */}

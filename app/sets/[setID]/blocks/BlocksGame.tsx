@@ -74,7 +74,7 @@ const InstructionsModal = ({ onStart }: { onStart: () => void }) => {
 };
 
 export default function BlocksGame({ set }: { set: FlashcardSet }) {
-const blocksRepo = useMemo(() => new BlocksRepository(), []);  
+const blocksRepo = useMemo(() => new BlocksRepository(), []);
   const { Flashcards: flashcards } = set;
 
   const concepts: Concept[] = useMemo(() => {
@@ -83,6 +83,8 @@ const blocksRepo = useMemo(() => new BlocksRepository(), []);
     return Array.from(conceptMap.entries()).map(([name, count]) => ({ id: name, name, required: count }));
   }, [flashcards]);
 
+
+  const [shuffledFlashcards, setShuffledFlashcards] = useState<typeof flashcards>([]);
   const [leaderboard, setLeaderboard] = useState<BlocksScore[]>([]);
   const [isSubmittingScore, setIsSubmittingScore] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
@@ -103,6 +105,16 @@ const blocksRepo = useMemo(() => new BlocksRepository(), []);
     }
     return () => clearInterval(interval);
   }, [isTimerRunning]);
+
+useEffect(() => {
+  const array = [...flashcards];
+  // Fisher-Yates shuffle algorithm
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  setShuffledFlashcards(array);
+}, [flashcards]);
 
   useEffect(() => {
     if (!activeConceptId) return;
@@ -308,7 +320,7 @@ const blocksRepo = useMemo(() => new BlocksRepository(), []);
             )}
           </div>
           <div className="bg-gray-50/70 border border-gray-200 rounded-lg p-4 min-h-[400px] lg:min-h-[60vh] flex flex-wrap content-start gap-3">
-            {flashcards.filter(card => !Object.values(matchedData).flat().includes(card.ID)).map(card => (
+            {shuffledFlashcards.filter(card => !Object.values(matchedData).flat().includes(card.ID)).map(card => (
               <div key={card.ID} onClick={() => handleCardClick(card.ID)}
                 className={clsx('px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 border select-none', 'bg-white text-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5',
                   { 'ring-2 ring-gray-800 ring-offset-2 border-gray-800': selectedCardIds.includes(card.ID), 'border-gray-300': !selectedCardIds.includes(card.ID), 'shake-error': errorCardIds.includes(card.ID), }
