@@ -412,12 +412,12 @@ const FlashCardCreator = () => {
   }, [cards, concepts]);
 
   const removeCard = (id: string) => { setCards(prev => prev.filter(card => card.id !== id)); };
-  const addNewGroup = () => {
+ /* const addNewGroup = () => {
     const newGroupName = prompt("Enter new group name:");
     if (newGroupName && !concepts.includes(newGroupName)) {
         setConcepts(prev => [...prev, newGroupName]);
     }
-  };
+  };*/
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -646,7 +646,7 @@ const FlashCardCreator = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold">Your Study Board</h3>
-            <Button variant="outline" onClick={addNewGroup}><Plus className="h-4 w-4 mr-2" />Add Group</Button>
+            {/*<Button variant="outline" onClick={addNewGroup}><Plus className="h-4 w-4 mr-2" />Add Group</Button>*/}
           </div>
           {cards.length > 0 ? (
             <div className="flex gap-4 overflow-x-auto pb-4">

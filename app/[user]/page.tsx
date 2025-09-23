@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Book, Clock, Bookmark, Share2, Check } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@auth0/nextjs-auth0";
-import Menu from "@/components/Menu";
 import { useToast } from "@/hooks/use-toast"
 import { fetchAccessToken } from '@/services/authService';
 
@@ -64,7 +63,6 @@ const ProfileFlashcardSets = () => {
   if (isLoading) {
     return (
       <div>
-        <Menu />
         <div className="flex items-center justify-center min-h-[200px]">
           <p className="text-muted-foreground">Loading your flashcard sets...</p>
         </div>
@@ -75,7 +73,6 @@ const ProfileFlashcardSets = () => {
   if (sets.length === 0) {
     return (
       <div>
-        <Menu />
         <div className="flex flex-col items-center justify-center min-h-[300px] space-y-4">
           <Book className="w-12 h-12 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">No flashcard sets found</p>
@@ -86,7 +83,6 @@ const ProfileFlashcardSets = () => {
 
   return (
     <div>
-      <Menu />
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Your Study Sets</h2>
@@ -123,7 +119,7 @@ const ProfileFlashcardSets = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sets.map((set) => (
             <Card key={set.ID} className="hover:shadow-lg transition-all duration-200">
-              <Link href={`/${user?.nickname}/${set.Title}`}>
+              <Link href={`/sets/${set.PublicID}`}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold truncate">
