@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import Menu from '@/components/Menu'
 import { fetchAccessToken } from '@/services/authService';
 
 const initialNodes: any = [];
@@ -226,7 +225,6 @@ export default function Page() {
 
   return (
     <>
-      <Menu />
       {/*<SecondaryNav setID={params.setID}/>*/}
       {!user && (
         <div className="max-w-4xl mx-auto p-4">

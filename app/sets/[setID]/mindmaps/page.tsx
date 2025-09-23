@@ -33,7 +33,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import Menu from "@/components/Menu";
 import { fetchAccessToken } from '@/services/authService';
 import { FlashcardRepository } from '@/repositories/flashcardRepository';
 
@@ -174,7 +173,6 @@ export default function MindMapList({
   if (error) {
     return (
       <div className="min-h-screen">
-        <Menu />
         {/*resolvedParams && (
           <SecondaryNav setID={resolvedParams.setID}/>
         )*/}
@@ -192,7 +190,6 @@ export default function MindMapList({
   // Normal rendering
   return (
     <div className="min-h-screen">
-      <Menu />
       {/*resolvedParams && (
         <SecondaryNav setID={resolvedParams.setID}/>
       )*/}
