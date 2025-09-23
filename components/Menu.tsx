@@ -34,7 +34,7 @@ const Menu: React.FC = async () => {
   // If a user session exists, try to get the access token.
   try {
     await auth0.getAccessToken();
-  } catch (error) {
+  } catch {
     // This can happen if the session is expired or invalid.
     // In this case, we'll show the login button as a fallback.
     return (
