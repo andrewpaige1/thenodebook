@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Auth0Provider } from '@auth0/nextjs-auth0';
 import Menu from "@/components/Menu";
+import Footer from "@/components/Footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +34,7 @@ export default function RootLayout({
       >
       <Menu />
         {children}
+      <Footer />
       </body>
       </Auth0Provider>
     </html>
