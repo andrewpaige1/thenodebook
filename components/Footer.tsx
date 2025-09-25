@@ -31,7 +31,12 @@ const Footer: React.FC = () => (
             - User progress, scores, and activity timestamps<br/>
             - Mind map node layouts and connections<br/>
             - Local storage data for tracking your study progress<br/>
-            - Authentication and session cookies via Auth0<br/><br/>
+            - Authentication and session cookies via Auth0<br/>
+            - Website usage analytics (see below)<br/><br/>
+            <em>b. Website Analytics</em><br/>
+            - We use Vercel Analytics to collect anonymized usage data, such as page views, device information, and general usage patterns.<br/>
+            - This data helps us improve the website and user experience.<br/>
+            - Analytics data is processed by Vercel and subject to their <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline">privacy policy</a>.<br/><br/>
             <em>b. Use of OpenAI API</em><br/>
             - When you use certain features (e.g., text extraction or AI-powered suggestions), your data may be sent to the OpenAI API for processing.<br/>
             - By using these features, you consent to the transfer and processing of your data by OpenAI, subject to their <a href="https://openai.com/policies/terms-of-use" target="_blank" rel="noopener noreferrer" className="underline">terms</a> and <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline">privacy policy</a>.<br/><br/>
@@ -70,6 +75,7 @@ const Footer: React.FC = () => (
             - Account Data: Nickname, Auth0 ID, email, and authentication data.<br/>
             - User Content: Flashcards, mind maps, scores, and study progress.<br/>
             - Usage Data: Interactions with the Services, device information, and cookies.<br/>
+            - Analytics Data: We use Vercel Analytics to collect anonymized usage data, such as page views, device information, and general usage patterns.<br/>
             - Third-Party Data: Data processed by OpenAI when using AI features.<br/><br/>
             <strong>2. How We Use Information</strong><br/>
             - To provide and improve Mindthred<br/>
@@ -79,6 +85,7 @@ const Footer: React.FC = () => (
             <strong>3. Data Sharing</strong><br/>
             - OpenAI: Data sent to OpenAI for AI-powered features is subject to their policies.<br/>
             - Auth0: Authentication data is managed by Auth0.<br/>
+            - Vercel: Analytics data is processed by Vercel and subject to their <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline">privacy policy</a>.<br/>
             - Legal: We may disclose data if required by law or to protect our rights.<br/><br/>
             <strong>4. Data Security</strong><br/>
             We use industry-standard measures to protect your data. However, no system is 100% secure.<br/><br/>
