@@ -35,8 +35,8 @@ export default function RootLayout({
       >
       <Menu />
         {children}
-      <Footer />
       <Analytics />
+      <Footer />
       </body>
       </Auth0Provider>
     </html>
