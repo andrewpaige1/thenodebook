@@ -17,17 +17,16 @@ const Menu: React.FC = async () => {
   const session = await auth0.getSession();
   const user = session?.user;
 
-  // If there's no user, show the login button.
+  // If there's no user, show the login button and Mindthred link.
   if (!user) {
     return (
-      <>
-      <div className="flex items-center justify-end p-4">
+      <div className="flex items-center justify-between p-4">
+        <Link href="/" className="text-2xl font-bold">Mindthred</Link>
         <Button asChild>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/auth/login">Login</a>
         </Button>
       </div>
-      </>
     );
   }
 
@@ -36,13 +35,14 @@ const Menu: React.FC = async () => {
     await auth0.getAccessToken();
   } catch {
     // This can happen if the session is expired or invalid.
-    // In this case, we'll show the login button as a fallback.
+    // In this case, we'll show the login button and Mindthred link as a fallback.
     return (
       <div className="flex items-center justify-between p-4">
-      <Button asChild>
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/auth/login">Login</a>
-      </Button>
+        <Link href="/" className="text-2xl font-bold">Mindthred</Link>
+        <Button asChild>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/auth/login">Login</a>
+        </Button>
       </div>
     );
   }
