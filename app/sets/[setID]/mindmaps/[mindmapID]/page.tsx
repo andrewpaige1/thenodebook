@@ -228,10 +228,8 @@ export default function Page() {
       )}
 
       {user && (
-        // This container fills the flex-grow space provided by layout.tsx.
-        // `position: relative` is crucial for anchoring the "Save" button.
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          
+        // Responsive container for the mindmap
+        <div className="relative w-full h-[calc(100vh-200px)] min-h-[350px] md:h-[600px] max-h-[calc(100vh-120px)]">
           {/* This button is positioned in the top-right of its relative parent */}
           <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 4 }}>
             <Button onClick={handleSaveMap} disabled={!hasChanges}>
@@ -245,6 +243,7 @@ export default function Page() {
             onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            className="w-full h-full"
           >
             <Controls />
             <MiniMap />
