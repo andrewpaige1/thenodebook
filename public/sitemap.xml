@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://mindthred.com/:user</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/:user/sets</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/blog/midterms</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/sets/:setID/blocks</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/sets/:setID/mindmaps/:mindmapID</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/sets/:setID/mindmaps</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/sets/:setID</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/sets/:setID/quiz</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/sets/:setID/update</loc>
+  </url>
+  <url>
+    <loc>https://mindthred.com/sets/new</loc>
+  </url>
+</urlset>

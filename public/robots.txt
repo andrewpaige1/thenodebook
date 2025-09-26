@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://mindthred.com
+
+# Sitemaps
+Sitemap: https://mindthred.com/sitemap.xml
