@@ -246,7 +246,10 @@ export default function Page() {
             className="w-full h-full"
           >
             <Controls />
-            <MiniMap />
+            {/* MiniMap is hidden on mobile for cleaner UI */}
+            <div className="hidden md:block">
+              <MiniMap />
+            </div>
             <Background variant={BackgroundVariant.Cross} gap={12} size={1} />
           </ReactFlow>
         </div>
