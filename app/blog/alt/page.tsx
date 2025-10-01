@@ -1,4 +1,4 @@
-
+import Link from 'next/link';
 export default function BlogPost() {
 	return (
 		<article className="max-w-4xl mx-auto px-6 py-12 bg-white rounded-xl shadow-2xl prose prose-xl dark:prose-invert">
@@ -48,7 +48,7 @@ export default function BlogPost() {
 
 				<h2>Ready to Try a New Way to Learn?</h2>
 				<p className="mt-8 text-lg text-gray-700">
-					If you’re tired of memorizing and forgetting, it’s time to try a smarter approach. Mindthred empowers you to truly understand your coursework, making learning more meaningful—and more effective. <a href="/auth/login" className="underline">Sign up today</a> and experience the difference for yourself.
+					If you’re tired of memorizing and forgetting, it’s time to try a smarter approach. Mindthred empowers you to truly understand your coursework, making learning more meaningful—and more effective. <Link href="/auth/login" className="underline">Sign up today</Link> and experience the difference for yourself.
 				</p>
 			</section>
 

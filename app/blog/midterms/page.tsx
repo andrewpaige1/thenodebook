@@ -1,4 +1,4 @@
-
+import Image from 'next/image';
 export default function BlogPost() {
   return (
     <article className="max-w-4xl mx-auto px-6 py-12 bg-white rounded-xl shadow-2xl prose prose-xl dark:prose-invert">
@@ -9,7 +9,14 @@ export default function BlogPost() {
       </header>
 
       {/* Cover Image */}
-      <img src="/midterm.svg" alt="Midterm Study" className="w-full rounded-md mb-8 object-cover" />
+      <Image
+        src="/midterm.svg"
+        alt="Midterm Study"
+        width={1200}
+        height={400}
+        className="w-full rounded-md mb-8 object-cover"
+        priority
+      />
 
       {/* Blog Content */}
       <section>
