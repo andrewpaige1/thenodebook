@@ -45,7 +45,7 @@ interface FlashCard {
   concept: string;
 }
 
-type UploadStatus = 'idle' | 'uploading' | 'processing' | 'success' | 'error';
+//type UploadStatus = 'idle' | 'uploading' | 'processing' | 'success' | 'error';
 const UNCATEGORIZED_GROUP = "Uncategorized";
 
 
