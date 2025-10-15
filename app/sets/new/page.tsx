@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Book, Upload, FileText, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Send, Globe2, Lock, CloudUpload, GripVertical, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Book, FileText, Lightbulb, Tag, ArrowLeft, ArrowRight, Trash2, Send, Globe2, Lock, /* Upload, CloudUpload, CheckCircle, */ GripVertical, Loader2, AlertCircle, } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { v4 as uuidv4 } from 'uuid';
@@ -347,8 +347,8 @@ const FlashCardCreator = () => {
   const [cards, setCards] = useState<FlashCard[]>([]);
   const [concepts, setConcepts] = useState<string[]>([UNCATEGORIZED_GROUP]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState('');
   const [textUploadStatus, setTextUploadStatus] = useState(false)
   const [currentCard, setCurrentCard] = useState<Partial<FlashCard>>({});
@@ -357,8 +357,8 @@ const FlashCardCreator = () => {
   const [, setDuplicateWarnings] = useState<string[]>([]);
   const router = useRouter();
   const [editingCard, setEditingCard] = useState<FlashCard | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [dragActive, setDragActive] = useState(false);
+  // const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // const [dragActive, setDragActive] = useState(false);
 
   const steps = [{ name: 'Term', key: 'term', icon: Book, placeholder: 'e.g., Photosynthesis' }, { name: 'Solution', key: 'solution', icon: Lightbulb, placeholder: 'The process by which green plants use sunlight...' }, { name: 'Concept', key: 'concept', icon: Tag, placeholder: 'e.g., Biology' }];
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -484,10 +484,10 @@ const FlashCardCreator = () => {
       setCards(prev => [...newCards, ...prev]);
       setTextUploadStatus(false);
     } catch {
-      setUploadStatus('error');
+      setTextUploadStatus(false);
     } finally {
       setPasteText('');
-      setTimeout(() => setUploadStatus('idle'), 3000);
+      setTextUploadStatus(false);
     }
 
   };
