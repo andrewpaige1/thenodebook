@@ -441,7 +441,7 @@ const FlashCardCreator = () => {
     }
   };
   
-  const handleFileUpload = async () => { 
+  /* const handleFileUpload = async () => { 
     if (!selectedFile) return;
     setUploadStatus('uploading');
     const uploadRepo = new UploadFlashcardRepository();
@@ -458,7 +458,7 @@ const FlashCardCreator = () => {
       setSelectedFile(null);
       setTimeout(() => setUploadStatus('idle'), 3000);
     }
-  };
+  }; */
   
   const handlePasteConvert = async () => { 
 
@@ -573,9 +573,9 @@ const FlashCardCreator = () => {
           <CardHeader><CardTitle>Create Flashcards</CardTitle></CardHeader>
           <CardContent>
             <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="manual"><Book className="h-4 w-4 mr-2" />Manual</TabsTrigger>
-                <TabsTrigger value="upload"><Upload className="h-4 w-4 mr-2" />Upload</TabsTrigger>
+                {/* <TabsTrigger value="upload"><Upload className="h-4 w-4 mr-2" />Upload</TabsTrigger> */}
                 <TabsTrigger value="paste"><FileText className="h-4 w-4 mr-2" />Import</TabsTrigger>
               </TabsList>
               
@@ -599,7 +599,7 @@ const FlashCardCreator = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="upload" className="pt-6">
+              {/* <TabsContent value="upload" className="pt-6">
                 <div
                   className={`relative flex flex-col items-center justify-center space-y-4 text-center border-2 border-dashed rounded-xl p-8 transition-colors duration-200 ${dragActive ? 'border-primary bg-primary/10' : 'border-gray-300 bg-white'}`}
                   onDragOver={e => { e.preventDefault(); setDragActive(true); }}
@@ -627,7 +627,7 @@ const FlashCardCreator = () => {
                     </Alert>
                   )}
                 </div>
-              </TabsContent>
+              </TabsContent> */}
 
               <TabsContent value="paste" className="pt-6">
                 <div className="space-y-4">
